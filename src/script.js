@@ -45,20 +45,70 @@ function checkValidInputExpression() {
 // RETURNS: (enum?) colour (red, yellow, green)
 function evaluateInputExpression(answer) {
 
-    let expressionDict = expressionToDict(answer)
-    let colour = determineColourFromDict(expressionDict);
-    
-    return colour;
+	let expressionDict = expressionToDict(answer)
+	let colour = determineColourFromDict(expressionDict);
+
+	return colour;
 }
 			
+//TODO: Make correctly handle negative terms
 // Cuts expression into a terms:coeffs dictionary	
 // INPUT: str some valid maths expression
 // RETURNS: (dict) of terms:coeff values
 // e.g: x ^ 2 + 3 sin(4x) - 2 sin(x)cos(x) - x
 // -> {x^2 : 1, sin(4x) : 3, sin(x)cos(x) : -2, x : -1}
-function expressionToDict(expresssion) {
-    rawExpresssion = expression.replaceAll(" ", "");
-    
-    // Strip all terms from raw expression and add to dict
-    return "";
+function expressionToDict(expression) {
+	let rawExp = expression.replaceAll(" ", "");
+	let i = 0;
+	let decomposedExpression = {};
+	while (i < rawExp.length)
+	{
+	    nextTerm = termToDict(rawExp, i);
+	    decomposedExpression[nextTerm.term] = nextTerm.coeff;
+	    i = nextTerm.i;
+	}
+	return decomposedExpression;
+}
+
+// "3x^2" -> [x^2, 3]
+function termToDict(str, i) {
+	let startTerm = -1;
+	let endTerm = str.length;
+	// j = start of term
+	for (let j = i; j < str.length; j++)
+	{
+	    if (isNaN(str[j]))
+	    {
+		startTerm = j;
+		break;
+	    }
+	}
+
+	let bracketCount = 0;
+
+	// k = end of term
+	for (let k = startTerm; k < str.length; k++)
+	{
+	    if (str[k] == '(')
+	    {
+		bracketCount++;
+	    }
+	    else if (str[k] == ')')
+	    {
+		bracketCount--; // FIXME: Won't work for brackted terms - e.g (10x + 2x^2)^1/2'            
+	    }
+	    if (str[k] == '+' || str[k] == '-')
+	    {
+		if (bracketCount == 0)
+		{
+		    endTerm = k;
+		    break;
+		}
+	    }
+  	}
+        return {
+	    coeff : str.slice(i, startTerm),
+	    term: str.slice(startTerm, endTerm),
+	    i: endTerm + 1
+	   };
 }
