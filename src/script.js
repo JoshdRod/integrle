@@ -1,3 +1,6 @@
+// TODO: Eventually, put this in a separate file
+let SOLUTION = expressionToDict("1/3 x^3 + 3/2 x^2 - 2x");
+
 let answerBox = document.getElementById("answerBox");
 			
 let response1 = document.getElementById("response1");
@@ -12,23 +15,24 @@ let responseCount = 0;
 function handleAnswerInputChange() {
 	if (event.key == "Enter")
 	{
-		/* TODO
-		   checkValidInputExpression();
-		   evaluateInputExpression(answerBox.value);
-		*/
+		let color = evaluateInputExpression(answerBox.value);
 		switch (responseCount)
 		{
 		       case 0:
 			   response1.innerText = answerBox.value;
+			   response1.style.backgroundColor = color;
 			   break;
 		       case 1:
 			   response2.innerText = answerBox.value;
+			   response2.style.backgroundColor = color;
 			   break;
 		       case 2:
 			   response3.innerText = answerBox.value;
+			   response3.style.backgroundColor = color;
 			   break;
 		       case 3:
 			   response4.innerText = answerBox.value;
+			   response4.style.backgroundColor = color;
 			   break;
 		}
 		responseCount++;
@@ -45,13 +49,26 @@ function checkValidInputExpression() {
 // RETURNS: (enum?) colour (red, yellow, green)
 function evaluateInputExpression(answer) {
 
-	let expressionDict = expressionToDict(answer)
-	let colour = determineColourFromDict(expressionDict);
+	let expressionDict = expressionToDict(answer);
 
-	return colour;
+	// Incorrect terms = red
+	if (!isEqual(Object.keys(expressionDict), Object.keys(SOLUTION)))
+	{
+		return "red";
+	}
+
+	// Correct terms, but incorrect coeffs = yellow
+	let terms = Object.keys(expressionDict);
+	for (const term of terms)
+	{
+		if (expressionDict[term] != SOLUTION[term])
+		{
+			return "yellow";
+		}
+	}
+	return "green";
 }
 			
-//TODO: Make correctly handle negative terms
 // Cuts expression into a terms:coeffs dictionary	
 // INPUT: str some valid maths expression
 // RETURNS: (dict) of terms:coeff values
@@ -90,7 +107,7 @@ function termToDict(str, i) {
 	// j = start of term
 	for (let j = i; j < str.length; j++)
 	{
-	    if (isNaN(str[j]))
+	    if (isNaN(str[j]) && str[j] != '/')
 	    {
 		startTerm = j;
 		break;
@@ -134,4 +151,29 @@ function termToDict(str, i) {
 	    term: str.slice(startTerm, endTerm),
 	    i: endTerm
 	};
+}
+
+// Checks if 2 arrays are equal
+function isEqual(a, b)
+{
+	// Sort both arrays
+	a = a.sort();
+	b = b.sort();
+
+	// 1. Check same length
+	if (a.length != b.length)
+	{
+		return false;
+	}
+
+	// 2. Check same content
+	for (let i = 0; i < a.length; i++)
+	{
+		if (a[i] != b[i])
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
