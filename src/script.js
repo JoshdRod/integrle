@@ -133,5 +133,5 @@ function termToDict(str, i) {
 	    coeff : coefficient,
 	    term: str.slice(startTerm, endTerm),
 	    i: endTerm
-	   };
+	};
 }
