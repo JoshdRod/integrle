@@ -74,6 +74,19 @@ function expressionToDict(expression) {
 function termToDict(str, i) {
 	let startTerm = -1;
 	let endTerm = str.length;
+
+	// Deal with first part of expression. If +, skip it. If -, take note and move on one.
+	let isNegative = false;
+	if (str[i] == '+')
+	{
+		i++;
+	}
+	else if (str[i] == '-')
+	{
+		i++;
+		isNegative = true;
+	}
+
 	// j = start of term
 	for (let j = i; j < str.length; j++)
 	{
@@ -106,9 +119,19 @@ function termToDict(str, i) {
 		}
 	    }
   	}
+	// Compose coeff
+	let coefficient = str.slice(i, startTerm);
+	if (coefficient == '')
+	{
+		coefficient = '1';
+	}
+	if (isNegative)
+	{
+		coefficient = '-' + coefficient;
+	}
         return {
-	    coeff : str.slice(i, startTerm),
+	    coeff : coefficient,
 	    term: str.slice(startTerm, endTerm),
-	    i: endTerm + 1
+	    i: endTerm
 	   };
 }
