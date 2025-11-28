@@ -37,6 +37,37 @@
 				width: 40em;
 				height: 3em;
 			}
+			.modal {
+				display: none; /* When shown, flex */
+				position: fixed;
+				z-index: 1;
+				width: 100%;
+				height: 100%;
+				background-color: rgba(0,0,0,0.4); /* Add some opacity */
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+
+				text-wrap: wrap;
+			}
+			.modal > .modalInnerContent {
+				width: 60%;
+				height: 60%;
+				background-color: white;
+				text-align: center;
+				margin-top: 2em;
+			}
+			.close {
+				float: left;
+			}
+			.colour-box {
+				width: 60%;
+				height: 1em;
+				margin-left: auto;
+				margin-right: auto;
+				margin-bottom: .5em;
+				background-color: gray;
+			}
 		</style>
 
 		<script id="MathJax-script" async
@@ -45,6 +76,26 @@
 		<title>Integrle</title>
 	</head>
 	<body>
+		<div id="winModal" class="modal">
+			<div class="modalInnerContent">
+				<span class="close" style="left: 0">&times;</span>
+				<h2 style="font-size: 300%">You win! :)</h2>
+				<div style="display: flex; flex-direction: horizontal;">
+					<div style="width: 50%;">
+						<p>The correct answer is:
+							<p id="answerText"></p>
+						</p>
+					</div>
+					<div style="width: 50%;">
+						<div class="colour-box" id="colourBox1"></div>
+						<div class="colour-box" id="colourBox2"></div>
+						<div class="colour-box" id="colourBox3"></div>
+						<div class="colour-box" id="colourBox4"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<div class="header">
 			<h2>Integrle</h2>
 		</div>
