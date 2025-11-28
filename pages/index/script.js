@@ -8,6 +8,8 @@ let response2 = document.getElementById("response2");
 let response3 = document.getElementById("response3");
 let response4 = document.getElementById("response4");
 
+let winModal = document.getElementById("winModal");
+
 answerBox.addEventListener("keydown", handleAnswerInputChange);
 		
 let responseCount = 0;
@@ -16,6 +18,7 @@ function handleAnswerInputChange() {
 	if (event.key == "Enter")
 	{
 		let color = evaluateInputExpression(answerBox.value);
+
 		switch (responseCount)
 		{
 		       case 0:
@@ -36,6 +39,12 @@ function handleAnswerInputChange() {
 			   break;
 		}
 		responseCount++;
+
+		// Handle win (show pop-up)
+		if (color == "green")
+		{
+			winModal.style.display = "flex";
+		}
 	}
 }
 		
