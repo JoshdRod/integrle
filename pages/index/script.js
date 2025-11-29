@@ -5,7 +5,7 @@ let answerText = document.getElementById("answerText"); // Answer that appears o
 answerText.innerText = `\\(${RAW_SOLUTION}\\)`;
 
 let answerBox = document.getElementById("answerBox");
-			
+
 // Response boxes - store previous answers
 let response1 = document.getElementById("response1");
 let response2 = document.getElementById("response2");
@@ -27,15 +27,19 @@ window.addEventListener("click", handleCloseModal);
 
 // Set up trusted html (for response boxes)
 if (typeof trustedTypes === "undefined")
-  trustedTypes = { createPolicy: (n, rules) => rules };
+	trustedTypes = {
+		createPolicy: (n, rules) => rules
+	};
 
-const policy = trustedTypes.createPolicy("my-policy", {
-  createHTML: (input) => DOMPurify.sanitize(input),
+const policy = trustedTypes.createPolicy("my-policy",
+{
+	createHTML: (input) => DOMPurify.sanitize(input),
 });
 
 let responseCount = 0;
 
-function handleAnswerInputChange() {
+function handleAnswerInputChange()
+{
 	if (event.key == "Enter")
 	{
 		let expressionDict = expressionToDict(answerBox.value);
@@ -44,32 +48,32 @@ function handleAnswerInputChange() {
 		// Update win modal
 		let answerCorrectness = evaluateCorrectness(expressionDict, SOLUTION);
 		let answerCorrectnessColour = {
-			"red": 255 * (100 - answerCorrectness)/100,
-			"green": 255 * (answerCorrectness)/100,
+			"red": 255 * (100 - answerCorrectness) / 100,
+			"green": 255 * (answerCorrectness) / 100,
 			"blue": 0
 		};
 		switch (responseCount)
 		{
-		       case 0:
-			   response1.innerHTML = expressionEvaluation;
-			   colourBox1.innerText = answerCorrectness + '%';
-			   colourBox1.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
-			   break;
-		       case 1:
-			   response2.innerHTML = expressionEvaluation;
-			   colourBox2.innerText = answerCorrectness + '%';
-			   colourBox2.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
-			   break;
-		       case 2:
-			   response3.innerHTML = expressionEvaluation;
-			   colourBox3.innerText = answerCorrectness + '%';
-			   colourBox3.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
-			   break;
-		       case 3:
-			   response4.innerHTML = expressionEvaluation;
-			   colourBox4.innerText = answerCorrectness + '%';
-			   colourBox4.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
-			   break;
+			case 0:
+				response1.innerHTML = expressionEvaluation;
+				colourBox1.innerText = answerCorrectness + '%';
+				colourBox1.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				break;
+			case 1:
+				response2.innerHTML = expressionEvaluation;
+				colourBox2.innerText = answerCorrectness + '%';
+				colourBox2.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				break;
+			case 2:
+				response3.innerHTML = expressionEvaluation;
+				colourBox3.innerText = answerCorrectness + '%';
+				colourBox3.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				break;
+			case 3:
+				response4.innerHTML = expressionEvaluation;
+				colourBox4.innerText = answerCorrectness + '%';
+				colourBox4.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				break;
 		}
 		responseCount++;
 		// Render new mathjax
@@ -82,15 +86,17 @@ function handleAnswerInputChange() {
 		}
 	}
 }
-		
-function handleCloseModal() {
+
+function handleCloseModal()
+{
 	winModal.style.display = "none";
 }
 // TODO: Checks if input expression is a valid maths expression in the first place
-function checkValidInputExpression() {
-    return;
-} 
-	
+function checkValidInputExpression()
+{
+	return;
+}
+
 // Takes in dict of expression, and constructs an evaluation of each term in that expression
 // INPUTS: dict expressionDict
 // RETURNS: str html of answer evaluation (to go in a response block)
@@ -99,7 +105,8 @@ function checkValidInputExpression() {
 // 			- Yellow: Term does exist, but coefficient is incorrect
 // 			- Green: Term and coefficient correct
 // 		A number is also appended on end, which corresponds to number of missing terms in expression
-function evaluateExpression(expressionDict) {
+function evaluateExpression(expressionDict)
+{
 	let answerEvaluation = `<div style="margin-left: auto">`;
 	// For expression in dict
 	let terms = Object.keys(expressionDict);
@@ -161,7 +168,8 @@ function evaluateExpression(expressionDict) {
 //	- Green: Term and coefficient correct
 // INPUTS: str term, int coeff, dict solution
 // RETURNS: str red, yellow, green
-function evaluateTerm(term, coeff, solution) {
+function evaluateTerm(term, coeff, solution)
+{
 	// If solution doesn't contain term, red
 	if (!solution.hasOwnProperty(term))
 		return "red";
@@ -175,7 +183,8 @@ function evaluateTerm(term, coeff, solution) {
 // Calculates number of terms in solution that are missing from expression
 // INPUTS: dict expressionDict, dict solutionDict
 // RETURNS: int number of missing terms
-function calculateMissingTerms(expressionDict, solutionDict) {
+function calculateMissingTerms(expressionDict, solutionDict)
+{
 	let missingCount = 0;
 	// Iterate over keys in solutionDict
 	let terms = Object.keys(solutionDict);
@@ -192,7 +201,8 @@ function calculateMissingTerms(expressionDict, solutionDict) {
 // Used for the boxes on the win modal
 // INPUTS: dict expressionDict, dict solutionDict
 // RETURNS: int % correctness of expression
-function evaluateCorrectness(expressionDict, solutionDict) {
+function evaluateCorrectness(expressionDict, solutionDict)
+{
 	let correctness = 0;
 	let terms = Object.keys(solutionDict);
 	// Amount correctness goes up by for each correct term / coeff
@@ -215,7 +225,8 @@ function evaluateCorrectness(expressionDict, solutionDict) {
 // Takes in dict of expression, and compares it to dict of solution. If exactly equal, player has won!
 // INPUTS: dict expressionDict
 // RETURNS: bool true if won, false if not
-function checkWin(expressionDict) {
+function checkWin(expressionDict)
+{
 
 	// Check for incorrect terms
 	if (!isEqual(Object.keys(expressionDict), Object.keys(SOLUTION)))
@@ -234,27 +245,29 @@ function checkWin(expressionDict) {
 	}
 	return true;
 }
-			
+
 // Cuts expression into a terms:coeffs dictionary	
 // INPUT: str some valid maths expression
 // RETURNS: (dict) of terms:coeff values
 // e.g: x ^ 2 + 3 sin(4x) - 2 sin(x)cos(x) - x
 // -> {x^2 : 1, sin(4x) : 3, sin(x)cos(x) : -2, x : -1}
-function expressionToDict(expression) {
+function expressionToDict(expression)
+{
 	let rawExp = expression.replaceAll(" ", "");
 	let i = 0;
 	let decomposedExpression = {};
 	while (i < rawExp.length)
 	{
-	    nextTerm = termToDict(rawExp, i);
-	    decomposedExpression[nextTerm.term] = nextTerm.coeff;
-	    i = nextTerm.i;
+		nextTerm = termToDict(rawExp, i);
+		decomposedExpression[nextTerm.term] = nextTerm.coeff;
+		i = nextTerm.i;
 	}
 	return decomposedExpression;
 }
 
 // "3x^2" -> [x^2, 3]
-function termToDict(str, i) {
+function termToDict(str, i)
+{
 	let startTerm = -1;
 	let endTerm = str.length;
 
@@ -273,11 +286,11 @@ function termToDict(str, i) {
 	// j = start of term
 	for (let j = i; j < str.length; j++)
 	{
-	    if (isNaN(str[j]) && str[j] != '/')
-	    {
-		startTerm = j;
-		break;
-	    }
+		if (isNaN(str[j]) && str[j] != '/')
+		{
+			startTerm = j;
+			break;
+		}
 	}
 
 	let bracketCount = 0;
@@ -285,23 +298,23 @@ function termToDict(str, i) {
 	// k = end of term
 	for (let k = startTerm; k < str.length; k++)
 	{
-	    if (str[k] == '(')
-	    {
-		bracketCount++;
-	    }
-	    else if (str[k] == ')')
-	    {
-		bracketCount--; // FIXME: Won't work for brackted terms - e.g (10x + 2x^2)^1/2'            
-	    }
-	    if (str[k] == '+' || str[k] == '-')
-	    {
-		if (bracketCount == 0)
+		if (str[k] == '(')
 		{
-		    endTerm = k;
-		    break;
+			bracketCount++;
 		}
-	    }
-  	}
+		else if (str[k] == ')')
+		{
+			bracketCount--; // FIXME: Won't work for brackted terms - e.g (10x + 2x^2)^1/2'            
+		}
+		if (str[k] == '+' || str[k] == '-')
+		{
+			if (bracketCount == 0)
+			{
+				endTerm = k;
+				break;
+			}
+		}
+	}
 	// Compose coeff
 	let coefficient = str.slice(i, startTerm);
 	if (coefficient == '')
@@ -312,10 +325,10 @@ function termToDict(str, i) {
 	{
 		coefficient = '-' + coefficient;
 	}
-        return {
-	    coeff : coefficient,
-	    term: str.slice(startTerm, endTerm),
-	    i: endTerm
+	return {
+		coeff: coefficient,
+		term: str.slice(startTerm, endTerm),
+		i: endTerm
 	};
 }
 
