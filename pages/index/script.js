@@ -119,35 +119,15 @@ function evaluateExpression(expressionDict)
 		let displayCoeff = '';
 		if (coeff[0] == '-')
 		{
-			if (coeff == '-1')
-			{
-				displayCoeff = '-';
-			}
-			else
-			{
-				displayCoeff = coeff;
-			}
+			displayCoeff = (coeff == '-1') ? '-' : coeff;
+		}
+		else if (term == terms[0])
+		{
+			displayCoeff = (coeff == '1') ? '' : coeff;
 		}
 		else
 		{
-			if (term == terms[0])
-			{
-				if (coeff != '1')
-				{
-					displayCoeff = coeff;
-				}
-			}
-			else
-			{
-				if (coeff == '1')
-				{
-					displayCoeff = '+';
-				}
-				else
-				{
-					displayCoeff = '+' + coeff;
-				}
-			}
+			displayCoeff = (coeff == '1') ? '+' : `+${coeff}`;
 		}
 		// Append to evaluation a <p> block with correct colour
 		expressionEvaluation += `<span style="background-color: ${colour}">\\(${displayCoeff}${term}\\)</span>`;
