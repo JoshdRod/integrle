@@ -1,5 +1,5 @@
 // TODO: Eventually, put this in a separate file
-let RAW_SOLUTION = "1/3 x^3 + 3/2 x^2 - 2x";
+let RAW_SOLUTION = "1/3 x^3 + 3/2 x^2 - 2x + c";
 let SOLUTION = expressionToDict(RAW_SOLUTION);
 let answerText = document.getElementById("answerText"); // Answer that appears on win modal
 answerText.innerText = `\\(${RAW_SOLUTION}\\)`;
