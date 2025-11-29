@@ -41,24 +41,40 @@ function handleAnswerInputChange() {
 		let expressionDict = expressionToDict(answerBox.value);
 		let expressionEvaluation = evaluateExpression(expressionDict);
 
+		// Update win modal
+		let answerCorrectness = evaluateCorrectness(expressionDict, SOLUTION);
+		let answerCorrectnessColour = {
+			"red": 255 * (100 - answerCorrectness)/100,
+			"green": 255 * (answerCorrectness)/100,
+			"blue": 0
+		};
 		switch (responseCount)
 		{
 		       case 0:
 			   response1.innerHTML = expressionEvaluation;
+			   colourBox1.innerText = answerCorrectness + '%';
+			   colourBox1.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 			   break;
 		       case 1:
 			   response2.innerHTML = expressionEvaluation;
+			   colourBox2.innerText = answerCorrectness + '%';
+			   colourBox2.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 			   break;
 		       case 2:
 			   response3.innerHTML = expressionEvaluation;
+			   colourBox3.innerText = answerCorrectness + '%';
+			   colourBox3.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 			   break;
 		       case 3:
 			   response4.innerHTML = expressionEvaluation;
+			   colourBox4.innerText = answerCorrectness + '%';
+			   colourBox4.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 			   break;
 		}
 		responseCount++;
 		// Render new mathjax
 		MathJax.typeset();
+
 		// Handle win (show pop-up)
 		if (checkWin(expressionDict))
 		{
@@ -170,6 +186,30 @@ function calculateMissingTerms(expressionDict, solutionDict) {
 			missingCount++;
 	}
 	return missingCount;
+}
+
+// Evaluates, as a %, how correct the input expression was.
+// Used for the boxes on the win modal
+// INPUTS: dict expressionDict, dict solutionDict
+// RETURNS: int % correctness of expression
+function evaluateCorrectness(expressionDict, solutionDict) {
+	let correctness = 0;
+	let terms = Object.keys(solutionDict);
+	// Amount correctness goes up by for each correct term / coeff
+	let increment = 100 / (2 * terms.length);
+
+	for (const term of terms)
+	{
+		if (expressionDict.hasOwnProperty(term))
+		{
+			correctness += increment;
+			if (expressionDict[term] == solutionDict[term])
+			{
+				correctness += increment;
+			}
+		}
+	}
+	return Math.round(correctness);
 }
 
 // Takes in dict of expression, and compares it to dict of solution. If exactly equal, player has won!
