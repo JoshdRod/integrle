@@ -84,7 +84,7 @@ function checkValidInputExpression() {
 // 			- Green: Term and coefficient correct
 // 		A number is also appended on end, which corresponds to number of missing terms in expression
 function evaluateExpression(expressionDict) {
-	let answerEvaluation = "";
+	let answerEvaluation = `<div style="margin-left: auto">`;
 	// For expression in dict
 	let terms = Object.keys(expressionDict);
 	for (const term of terms)
@@ -129,10 +129,11 @@ function evaluateExpression(expressionDict) {
 		// Append to answer a <p> block with correct colour
 		answerEvaluation += `<span style="background-color: ${colour}">\\(${displayCoeff}${term}\\)</span>`;
 	}
+	answerEvaluation += "</div>"
 	// Calculate number of terms missing from dict
 	let missingTermsCount = calculateMissingTerms(expressionDict, SOLUTION);
 	// Append <p> block with number of terms missing
-	answerEvaluation += `<span>  || ${missingTermsCount}  ||</span>`;
+	answerEvaluation += `<div style="margin-left: auto"><span>  || ${missingTermsCount}  ||</span></div>`;
 	// Convert into trusted string (prevent xss attacks)
 	let trustedAnswerEvaluation = policy.createHTML(answerEvaluation);
 	return trustedAnswerEvaluation;
