@@ -226,9 +226,9 @@ function checkWin(expressionDict)
 	return true;
 }
 
-// Cuts expression into a terms:coeffs dictionary	
+// Parses expression into a terms:coeffs dictionary mapping
 // INPUT: str some valid maths expression
-// RETURNS: (dict) of terms:coeff values
+// RETURNS: (dict) mapping terms to coeffs
 // e.g: x ^ 2 + 3 sin(4x) - 2 sin(x)cos(x) - x
 // -> {x^2 : 1, sin(4x) : 3, sin(x)cos(x) : -2, x : -1}
 function expressionToDict(expression)
