@@ -52,32 +52,38 @@ function handleAnswerInputChange()
 			"green": 255 * (answerCorrectness) / 100,
 			"blue": 0
 		};
+
+		let responseBox;
 		switch (responseCount)
 		{
 			case 0:
 				response1.innerHTML = expressionEvaluation;
 				colourBox1.innerText = answerCorrectness + '%';
 				colourBox1.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				responseBox = response1;
 				break;
 			case 1:
 				response2.innerHTML = expressionEvaluation;
 				colourBox2.innerText = answerCorrectness + '%';
 				colourBox2.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				responseBox = response2;
 				break;
 			case 2:
 				response3.innerHTML = expressionEvaluation;
 				colourBox3.innerText = answerCorrectness + '%';
 				colourBox3.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				responseBox = response3;
 				break;
 			case 3:
 				response4.innerHTML = expressionEvaluation;
 				colourBox4.innerText = answerCorrectness + '%';
 				colourBox4.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				responseBox = response4;
 				break;
 		}
 		responseCount++;
 		// Render new mathjax
-		MathJax.typeset();
+		MathJax.typeset([responseBox]);
 
 		// Handle win (show pop-up)
 		if (checkWin(expressionDict))
