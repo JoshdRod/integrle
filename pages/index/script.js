@@ -25,40 +25,42 @@ answerBox.addEventListener("keydown", handleAnswerInputChange);
 winModalClose.addEventListener("click", handleCloseModal);
 window.addEventListener("click", handleCloseModal);
 
+// Set up trusted html (for response boxes)
+if (typeof trustedTypes === "undefined")
+  trustedTypes = { createPolicy: (n, rules) => rules };
+
+const policy = trustedTypes.createPolicy("my-policy", {
+  createHTML: (input) => DOMPurify.sanitize(input),
+});
+
 let responseCount = 0;
 
 function handleAnswerInputChange() {
 	if (event.key == "Enter")
 	{
-		let color = evaluateInputExpression(answerBox.value);
+		let expressionDict = expressionToDict(answerBox.value);
+		let expressionEvaluation = evaluateExpression(expressionDict);
 
 		switch (responseCount)
 		{
 		       case 0:
-			   response1.innerText = answerBox.value;
-			   response1.style.backgroundColor = color;
-			   colourBox1.style.backgroundColor = color;
+			   response1.innerHTML = expressionEvaluation;
 			   break;
 		       case 1:
-			   response2.innerText = answerBox.value;
-			   response2.style.backgroundColor = color;
-			   colourBox2.style.backgroundColor = color;
+			   response2.innerHTML = expressionEvaluation;
 			   break;
 		       case 2:
-			   response3.innerText = answerBox.value;
-			   response3.style.backgroundColor = color;
-			   colourBox3.style.backgroundColor = color;
+			   response3.innerHTML = expressionEvaluation;
 			   break;
 		       case 3:
-			   response4.innerText = answerBox.value;
-			   response4.style.backgroundColor = color;
-			   colourBox4.style.backgroundColor = color;
+			   response4.innerHTML = expressionEvaluation;
 			   break;
 		}
 		responseCount++;
-
+		// Render new mathjax
+		MathJax.typeset();
 		// Handle win (show pop-up)
-		if (color == "green")
+		if (checkWin(expressionDict))
 		{
 			winModal.style.display = "flex";
 		}
@@ -73,29 +75,123 @@ function checkValidInputExpression() {
     return;
 } 
 	
-// Takes in valid maths expression, compares that to the answer, then determines if answer is red, yellow, or green
-// INPUTS: str answer (just the contents of thr input box)
-// RETURNS: (enum?) colour (red, yellow, green)
-function evaluateInputExpression(answer) {
+// Takes in dict of expression, and constructs an evaluation of each term in that expression
+// INPUTS: dict expressionDict
+// RETURNS: str html of answer evaluation (to go in a response block)
+// 		Each term in expression is coloured:
+// 			- Red: Term doesn't exist in answer
+// 			- Yellow: Term does exist, but coefficient is incorrect
+// 			- Green: Term and coefficient correct
+// 		A number is also appended on end, which corresponds to number of missing terms in expression
+function evaluateExpression(expressionDict) {
+	let answerEvaluation = "";
+	// For expression in dict
+	let terms = Object.keys(expressionDict);
+	for (const term of terms)
+	{
+		let coeff = expressionDict[term];
+		// Compare to answer, and give correct colour
+		let colour = evaluateTerm(term, coeff, SOLUTION);
+		// Format coefficient correctly for display (e.g {'x', -1} -> -x, {'x', 5} -> 5x if first term, +5x if not)
+		let displayCoeff = '';
+		if (coeff[0] == '-')
+		{
+			if (coeff == '-1')
+			{
+				displayCoeff = '-';
+			}
+			else
+			{
+				displayCoeff = coeff;
+			}
+		}
+		else
+		{
+			if (term == terms[0])
+			{
+				if (coeff != '1')
+				{
+					displayCoeff = coeff;
+				}
+			}
+			else
+			{
+				if (coeff == '1')
+				{
+					displayCoeff = '+';
+				}
+				else
+				{
+					displayCoeff = '+' + coeff;
+				}
+			}
+		}
+		// Append to answer a <p> block with correct colour
+		answerEvaluation += `<span style="background-color: ${colour}">\\(${displayCoeff}${term}\\)</span>`;
+	}
+	// Calculate number of terms missing from dict
+	let missingTermsCount = calculateMissingTerms(expressionDict, SOLUTION);
+	// Append <p> block with number of terms missing
+	answerEvaluation += `<span>  || ${missingTermsCount}  ||</span>`;
+	// Convert into trusted string (prevent xss attacks)
+	let trustedAnswerEvaluation = policy.createHTML(answerEvaluation);
+	return trustedAnswerEvaluation;
+}
 
-	let expressionDict = expressionToDict(answer);
+// Ranks term as red, yellow or green
+//	- Red: Term doesn't exist in answer
+//	- Yellow: Term does exist, but coefficient is incorrect
+//	- Green: Term and coefficient correct
+// INPUTS: str term, int coeff, dict solution
+// RETURNS: str red, yellow, green
+function evaluateTerm(term, coeff, solution) {
+	// If solution doesn't contain term, red
+	if (!solution.hasOwnProperty(term))
+		return "red";
+	// If solution's coeff != coeff, yellow
+	if (solution[term] != coeff)
+		return "yellow";
+	// Else, green
+	return "green";
+}
 
-	// Incorrect terms = red
+// Calculates number of terms in solution that are missing from expression
+// INPUTS: dict expressionDict, dict solutionDict
+// RETURNS: int number of missing terms
+function calculateMissingTerms(expressionDict, solutionDict) {
+	let missingCount = 0;
+	// Iterate over keys in solutionDict
+	let terms = Object.keys(solutionDict);
+	for (const term of terms)
+	{
+		// If not in expressionDict, +1 to missingCount
+		if (!expressionDict.hasOwnProperty(term))
+			missingCount++;
+	}
+	return missingCount;
+}
+
+// Takes in dict of expression, and compares it to dict of solution. If exactly equal, player has won!
+// INPUTS: dict expressionDict
+// RETURNS: bool true if won, false if not
+function checkWin(expressionDict) {
+
+	// Check for incorrect terms
 	if (!isEqual(Object.keys(expressionDict), Object.keys(SOLUTION)))
 	{
-		return "red";
+		return false;
 	}
 
-	// Correct terms, but incorrect coeffs = yellow
+	// Check for incorrect coeffs
 	let terms = Object.keys(expressionDict);
 	for (const term of terms)
 	{
 		if (expressionDict[term] != SOLUTION[term])
 		{
-			return "yellow";
+			return false;
 		}
 	}
-	return "green";
+	return true;
 }
 			
 // Cuts expression into a terms:coeffs dictionary	
