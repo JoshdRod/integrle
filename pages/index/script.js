@@ -152,7 +152,7 @@ function evaluateExpression(expressionDict)
 		// Append to evaluation a <p> block with correct colour
 		expressionEvaluation += `<span style="background-color: ${colour}">\\(${displayCoeff}${term}\\)</span>`;
 	}
-	expressionEvaluation += "</div>"
+	expressionEvaluation += "</div>";
 	// Calculate number of terms missing from dict
 	let missingTermsCount = calculateMissingTerms(expressionDict, SOLUTION);
 	// Append <p> block with number of terms missing
