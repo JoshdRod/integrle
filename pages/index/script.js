@@ -107,13 +107,13 @@ function checkValidInputExpression()
 // 		A number is also appended on end, which corresponds to number of missing terms in expression
 function evaluateExpression(expressionDict)
 {
-	let answerEvaluation = `<div style="margin-left: auto">`;
+	let expressionEvaluation = `<div style="margin-left: auto">`;
 	// For expression in dict
 	let terms = Object.keys(expressionDict);
 	for (const term of terms)
 	{
 		let coeff = expressionDict[term];
-		// Compare to answer, and give correct colour
+		// Compare to solution, and give correct colour
 		let colour = evaluateTerm(term, coeff, SOLUTION);
 		// Format coefficient correctly for display (e.g {'x', -1} -> -x, {'x', 5} -> 5x if first term, +5x if not)
 		let displayCoeff = '';
@@ -149,17 +149,17 @@ function evaluateExpression(expressionDict)
 				}
 			}
 		}
-		// Append to answer a <p> block with correct colour
-		answerEvaluation += `<span style="background-color: ${colour}">\\(${displayCoeff}${term}\\)</span>`;
+		// Append to evaluation a <p> block with correct colour
+		expressionEvaluation += `<span style="background-color: ${colour}">\\(${displayCoeff}${term}\\)</span>`;
 	}
-	answerEvaluation += "</div>"
+	expressionEvaluation += "</div>"
 	// Calculate number of terms missing from dict
 	let missingTermsCount = calculateMissingTerms(expressionDict, SOLUTION);
 	// Append <p> block with number of terms missing
-	answerEvaluation += `<div style="margin-left: auto"><span>  || ${missingTermsCount}  ||</span></div>`;
+	expressionEvaluation += `<div style="margin-left: auto"><span>  || ${missingTermsCount}  ||</span></div>`;
 	// Convert into trusted string (prevent xss attacks)
-	let sanitisedAnswerEvaluation = policy.createHTML(answerEvaluation);
-	return sanitisedAnswerEvaluation;
+	let sanitisedExpressionEvaluation = policy.createHTML(expressionEvaluation);
+	return sanitisedExpressionEvaluation;
 }
 
 // Ranks term as red, yellow or green
