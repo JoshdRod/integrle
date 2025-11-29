@@ -244,7 +244,7 @@ function expressionToDict(expression)
 	let decomposedExpression = {};
 	while (i < rawExp.length)
 	{
-		nextTerm = termToDict(rawExp, i);
+		let nextTerm = termToDict(rawExp, i);
 		decomposedExpression[nextTerm.term] = nextTerm.coeff;
 		i = nextTerm.i;
 	}
