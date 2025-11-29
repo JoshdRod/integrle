@@ -167,7 +167,7 @@ function evaluateExpression(expressionDict)
 //	- Yellow: Term does exist, but coefficient is incorrect
 //	- Green: Term and coefficient correct
 // INPUTS: str term, int coeff, dict solution
-// RETURNS: str red, yellow, green
+// RETURNS: str red/yellow/green
 function evaluateTerm(term, coeff, solution)
 {
 	// If solution doesn't contain term, red
