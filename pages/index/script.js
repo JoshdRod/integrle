@@ -284,7 +284,7 @@ function termToDict(str, i)
 		}
 		else if (str[k] == ')')
 		{
-			bracketCount--; // FIXME: Won't work for brackted terms - e.g (10x + 2x^2)^1/2'            
+			bracketCount--; // FIXME: Won't work for bracketed terms - e.g (10x + 2x^2)^1/2'            
 		}
 		if (str[k] == '+' || str[k] == '-')
 		{
