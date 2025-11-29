@@ -158,8 +158,8 @@ function evaluateExpression(expressionDict)
 	// Append <p> block with number of terms missing
 	answerEvaluation += `<div style="margin-left: auto"><span>  || ${missingTermsCount}  ||</span></div>`;
 	// Convert into trusted string (prevent xss attacks)
-	let trustedAnswerEvaluation = policy.createHTML(answerEvaluation);
-	return trustedAnswerEvaluation;
+	let sanitisedAnswerEvaluation = policy.createHTML(answerEvaluation);
+	return sanitisedAnswerEvaluation;
 }
 
 // Ranks term as red, yellow or green
