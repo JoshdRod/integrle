@@ -113,39 +113,6 @@ function checkValidInputExpression()
 // 		A number is also appended on end, which corresponds to number of missing terms in expression
 function evaluateExpression(expressionDict)
 {
-	let expressionEvaluation = `<div style="margin-left: auto">`;
-	// For expression in dict
-	let terms = Object.keys(expressionDict);
-	for (const term of terms)
-	{
-		let coeff = expressionDict[term];
-		// Compare to solution, and give correct colour
-		let colour = evaluateTerm(term, coeff, SOLUTION);
-		// Format coefficient correctly for display (e.g {'x', -1} -> -x, {'x', 5} -> 5x if first term, +5x if not)
-		let displayCoeff = '';
-		if (coeff[0] == '-')
-		{
-			displayCoeff = (coeff == '-1') ? '-' : coeff;
-		}
-		else if (term == terms[0])
-		{
-			displayCoeff = (coeff == '1') ? '' : coeff;
-		}
-		else
-		{
-			displayCoeff = (coeff == '1') ? '+' : `+${coeff}`;
-		}
-		// Append to evaluation a <p> block with correct colour
-		expressionEvaluation += `<span style="background-color: ${colour}">\\(${displayCoeff}${term}\\)</span>`;
-	}
-	expressionEvaluation += "</div>";
-	// Calculate number of terms missing from dict
-	let missingTermsCount = calculateMissingTerms(expressionDict, SOLUTION);
-	// Append <p> block with number of terms missing
-	expressionEvaluation += `<div style="margin-left: auto"><span>  || ${missingTermsCount}  ||</span></div>`;
-	// Convert into trusted string (prevent xss attacks)
-	let sanitisedExpressionEvaluation = policy.createHTML(expressionEvaluation);
-	return sanitisedExpressionEvaluation;
 }
 
 // Ranks term as red, yellow or green
@@ -156,14 +123,6 @@ function evaluateExpression(expressionDict)
 // RETURNS: str red/yellow/green
 function evaluateTerm(term, coeff, solution)
 {
-	// If solution doesn't contain term, red
-	if (!solution.hasOwnProperty(term))
-		return "red";
-	// If solution's coeff != coeff, yellow
-	if (solution[term] != coeff)
-		return "yellow";
-	// Else, green
-	return "green";
 }
 
 // Calculates number of terms in solution that are missing from expression
@@ -171,16 +130,6 @@ function evaluateTerm(term, coeff, solution)
 // RETURNS: int number of missing terms
 function calculateMissingTerms(expressionDict, solutionDict)
 {
-	let missingCount = 0;
-	// Iterate over keys in solutionDict
-	let terms = Object.keys(solutionDict);
-	for (const term of terms)
-	{
-		// If not in expressionDict, +1 to missingCount
-		if (!expressionDict.hasOwnProperty(term))
-			missingCount++;
-	}
-	return missingCount;
 }
 
 // Evaluates, as a %, how correct the input expression was.
@@ -189,156 +138,282 @@ function calculateMissingTerms(expressionDict, solutionDict)
 // RETURNS: int % correctness of expression
 function evaluateCorrectness(expressionDict, solutionDict)
 {
-	let correctness = 0;
-	let terms = Object.keys(solutionDict);
-	// Amount correctness goes up by for each correct term / coeff
-	let increment = 100 / (2 * terms.length);
-
-	for (const term of terms)
-	{
-		if (expressionDict.hasOwnProperty(term))
-		{
-			correctness += increment;
-			if (expressionDict[term] == solutionDict[term])
-			{
-				correctness += increment;
-			}
-		}
-	}
-	return Math.round(correctness);
 }
 
-// Takes in dict of expression, and compares it to dict of solution. If exactly equal, player has won!
-// INPUTS: dict expressionDict
-// RETURNS: bool true if won, false if not
-function checkWin(expressionDict)
+// Expression to component list
+function expressionToComponentList(expression)
 {
-
-	// Check for incorrect terms
-	if (!isEqual(Object.keys(expressionDict), Object.keys(SOLUTION)))
-	{
-		return false;
-	}
-
-	// Check for incorrect coeffs
-	let terms = Object.keys(expressionDict);
-	for (const term of terms)
-	{
-		if (expressionDict[term] != SOLUTION[term])
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-// Parses expression into a terms:coeffs dictionary mapping
-// INPUT: str some valid maths expression
-// RETURNS: (dict) mapping terms to coeffs
-// e.g: x ^ 2 + 3 sin(4x) - 2 sin(x)cos(x) - x
-// -> {x^2 : 1, sin(4x) : 3, sin(x)cos(x) : -2, x : -1}
-function expressionToDict(expression)
-{
-	let rawExp = expression.replaceAll(" ", "");
+	let Constants = ['e', "pi"];
+	let exp = cleanExpression(expression);
+	let list = [];
+	let content = "";
+	let type = "";
+	let precedence = "";
+	let commutative = true;
 	let i = 0;
-	let decomposedExpression = {};
-	while (i < rawExp.length)
+	while (i < exp.length)
 	{
-		let nextTerm = termToDict(rawExp, i);
-		decomposedExpression[nextTerm.term] = nextTerm.coeff;
-		i = nextTerm.i;
-	}
-	return decomposedExpression;
-}
-
-// "3x^2" -> [x^2, 3]
-function termToDict(str, i)
-{
-	let startTerm = -1;
-	let endTerm = str.length;
-
-	// Deal with first part of expression. If +, skip it. If -, take note and move on one.
-	let isNegative = false;
-	if (str[i] == '+')
-	{
-		i++;
-	}
-	else if (str[i] == '-')
-	{
-		i++;
-		isNegative = true;
-	}
-
-	// j = start of term
-	for (let j = i; j < str.length; j++)
-	{
-		if (isNaN(str[j]) && str[j] != '/')
+		// If a negative number that at the start, or after an open bracket/ function definition, add the implicit -1*
+		// e.g: -5x -> -1 * 5 x
+		// e.g: 10*(-x) -> 10 * ( -1 * x )
+		// e.g: sin -x -> sin -1 * x
+		if (
+			(
+				list.length == 0
+				|| list.length > 0 && 
+				(
+					list[list.length - 1].type == "open bracket"
+					|| list[list.length - 1].type == "function"
+				)
+			)
+			&& exp[i] == '-'
+		)
 		{
-			startTerm = j;
-			break;
+			content = "-1";
+			type = "number";
+
+			i++;
 		}
-	}
 
-	let bracketCount = 0;
-
-	// k = end of term
-	for (let k = startTerm; k < str.length; k++)
-	{
-		if (str[k] == '(')
+		// If number, find end of num and add whole num
+		else if (!isNaN(exp[i]))
 		{
-			bracketCount++;
-		}
-		else if (str[k] == ')')
-		{
-			bracketCount--; // FIXME: Won't work for bracketed terms - e.g (10x + 2x^2)^1/2'            
-		}
-		if (str[k] == '+' || str[k] == '-')
-		{
-			if (bracketCount == 0)
+			let found = false;
+			for (let j = i; j < exp.length; j++)
 			{
-				endTerm = k;
-				break;
+				if (isNaN(exp[j]))
+				{
+					content = exp.slice(i, j);
+					type = "number";
+
+					i = j;
+					found = true;
+					break;
+				}
+			}
+			if (found == false) // If can't find any non-nums, then number extends to end of string
+			{
+				content = exp.slice(i);
+				type = "number";
+
+				i = exp.length;
 			}
 		}
+
+		// If bracket, add to list
+		else if (['(', ')'].includes(exp[i]))
+		{
+			content = exp[i];
+			type = exp[i] == '(' ? "open bracket" : "close bracket"; 
+
+			i++;
+		}
+
+		// If operator, add to list
+		else if (['+', '-', '/', '*', '^'].includes(exp[i]))
+		{
+			content = exp[i];
+			type = "operator";
+			precedence = {'+': 0, '-': 0, '/': 1, '*': 1, '^': 2}[exp[i]];
+			commutative = {'+': true, '-': false, '/': false, '*': true, '^': false}[exp[i]];
+			i++;
+		}
+
+		// If x, add to list
+		else if (exp[i] == 'x')
+		{
+			content = 'x';
+			type = "variable";
+
+			i++;
+		}
+
+		// If other letters, treat as function/constant, add to list
+		else if (exp[i].toUpperCase() != exp[i].toLowerCase())
+		{
+			let found = false;
+			// Go until x, constant, or non-letter found
+			for (let j = i; j < exp.length; j++)
+			{
+				if (exp[j] == 'x' || exp[j].toUpperCase() == exp[j].toLowerCase())
+				{
+					content = exp.slice(i, j);
+
+					i = j;
+					found = true;
+					break;
+				}
+			}
+			// If for loop finishes, then function name extends to end of string
+			if (found == false)
+			{
+				content = exp.slice(i);
+
+				i = exp.length;
+			}
+
+			// Determine if function or constant
+			if (Constants.includes(content))
+			{
+				type = "constant";
+			}
+			else
+			{
+				type = "function";
+				precedence = 0.5;
+			}
+		}
+
+		// Add new component
+		let newComponent = {
+			content: content,
+			type: type,
+			leftNode: -1,
+			rightNode: -1
+		};
+
+		if (type == "operator" || type == "function")
+			newComponent.precedence = precedence;
+			if (type == "operator")
+				newComponent.commutative = commutative;
+
+		list.push(newComponent);
+
+		// Check for implicit * signs
+		// If previous component is: Number, Variable, or Close Bracket
+		// And current component is: Open Bracket, Number, Variable, or Function
+		// We need a * sign between the two
+		// e.g 5sin(x) -> 5 * sin ( x )
+		// e.g 10x -> 10 * x
+		// e.g (10 + x)(3 + x) -> ( 10 + x ) * ( 3 + x )
+		if (
+			list.length >= 2
+			&& ["close bracket", "number", "variable"].includes(list[list.length - 2].type)
+			&& ["open bracket", "number", "variable", "function"].includes(list[list.length - 1].type)
+		)
+		{
+			list.splice(-1, 0, {
+				content: '*',
+				type: "operator",
+				precedence: 1,
+				leftNode: -1,
+				rightNode: -1,
+				commutative: true
+			});
+		}
+			
 	}
-	// Compose coeff
-	let coefficient = str.slice(i, startTerm);
-	if (coefficient == '')
-	{
-		coefficient = '1';
-	}
-	if (isNegative)
-	{
-		coefficient = '-' + coefficient;
-	}
-	return {
-		coeff: coefficient,
-		term: str.slice(startTerm, endTerm),
-		i: endTerm
-	};
+	return list;
 }
 
-// Checks if 2 arrays are equal
-function isEqual(a, b)
+// Puts the components in a list into postfix notation
+// Uses modified Shunting Yard Algorithm
+function componentListToPostfix(list)
 {
-	// Sort both arrays
-	a = a.sort();
-	b = b.sort();
-
-	// 1. Check same length
-	if (a.length != b.length)
+	let infixList = [];
+	let operatorStack = [];
+	let index = 0;
+	// Iterate over components
+	while(index < list.length)
 	{
-		return false;
-	}
-
-	// 2. Check same content
-	for (let i = 0; i < a.length; i++)
-	{
-		if (a[i] != b[i])
+		let component = list[index];
+		// If number, constant, or variable, put in output
+		if (["number", "constant", "variable"].includes(component.type))
 		{
-			return false;
+			infixList.push(component);
+		}
+		// If (, recurse and add to string
+		else if (component.type == "open bracket")
+		{
+			let bracketEval = componentListToPostfix(list.slice(index+1));
+			index += bracketEval.index + 1; // +1, as list indices start from 0
+			infixList.push(...bracketEval.infixList);
+		}
+		// If ), return
+		else if (component.type == "close bracket")
+		{
+			infixList.push(...operatorStack.reverse());
+			return {
+				infixList: infixList,
+				index: index
+			};
+		}
+		// If operator or function, look at stack
+		else if (component.type == "operator" || component.type == "function")
+		{
+			// If higher precedence than top of stack, push
+			if (operatorStack.length == 0 || component.precedence > operatorStack[operatorStack.length - 1].precedence)
+			{
+				operatorStack.push(component);
+			}
+			// If same/lower precedence, pop all higher precedence operators + push
+			else
+			{
+				while (operatorStack.length > 0 && component.precedence <= operatorStack[operatorStack.length - 1].precedence)
+				{
+					infixList.push(operatorStack.pop());
+				}
+				operatorStack.push(component);
+			}
+		}
+		index++;
+	}
+	// At end, unload operator stack
+	infixList.push(...operatorStack.reverse());
+	return infixList;
+}
+
+// Takes a list of components in postfix, and converts into tree
+function postfixToTree(components, index=0)
+{
+	// If at end of components, return
+	if (index >= components.length)
+		return index;
+
+	let currentComponent = components[index];
+	// If number/constant, return
+	if (currentComponent.type == "number" || components[index].type == "constant")
+		return index;
+
+	// If function, add next component to left node
+	if (currentComponent.type == "function" || currentComponent.type == "operator")
+	{
+		if (index + 1 < components.length)
+		{
+			currentComponent.leftNode = index+1;
+			index = postfixToTree(components, index+1);
+		}
+
+		if (currentComponent.type == "operator" && index + 1 < components.length)
+		{
+			currentComponent.rightNode = index+1;
+			index = postfixToTree(components, index+1);
 		}
 	}
 
-	return true;
+	return index;
 }
+
+function strToTree(str)
+{
+	comp = expressionToComponentList(str);
+	let pf = componentListToPostfix(comp);
+	for (component of pf)
+	{
+		console.log(component.content, " ");
+	}
+	postfixToTree(pf.reverse());
+	console.log("Tree: ", pf);
+}
+
+function cleanExpression(expression)
+{
+	let exp = expression;
+	// Remove all line breaks
+	exp = exp.replaceAll('\n', '');
+	// Remove all whitespace
+	exp = exp.replaceAll(' ', '');
+	return exp;
+}
+
+
