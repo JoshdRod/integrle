@@ -364,34 +364,37 @@ function componentListToPostfix(list)
 }
 
 // Takes a list of components in postfix, and converts into tree
-function postfixToTree(components, index=0)
+// INPUTS: list of componets in the tree
+// RETURNS: list Tree
+function postfixToTree(components, index, depth)
 {
-	// If at end of components, return
-	if (index >= components.length)
-		return index;
-
+	// Ironically, this works better with prefix, so convert
+	if (depth == 0)
+		components = components.reverse();
 	let currentComponent = components[index];
-	// If number/constant, return
-	if (currentComponent.type == "number" || components[index].type == "constant")
-		return index;
 
-	// If function, add next component to left node
-	if (currentComponent.type == "function" || currentComponent.type == "operator")
+	switch(currentComponent.type)
 	{
-		if (index + 1 < components.length)
-		{
+		case "function":
+		case "operator": {
 			currentComponent.leftNode = index+1;
-			index = postfixToTree(components, index+1);
-		}
+			index = postfixToTree(components, index+1, depth+1);
 
-		if (currentComponent.type == "operator" && index + 1 < components.length)
-		{
-			currentComponent.rightNode = index+1;
-			index = postfixToTree(components, index+1);
+			if (currentComponent.type == "operator")
+			{
+				currentComponent.rightNode = index+1;
+				index = postfixToTree(components, index+1, depth+1);
+			}
 		}
+		case "number":
+		case "constant":
+			break;
 	}
 
-	return index;
+	if (depth > 0)
+		return index;
+	else
+		return components;
 }
 
 function strToTree(str)
@@ -402,8 +405,8 @@ function strToTree(str)
 	{
 		console.log(component.content, " ");
 	}
-	postfixToTree(pf.reverse());
-	console.log("Tree: ", pf);
+	let tree = postfixToTree(pf.reverse());
+	console.log("Tree: ", tree);
 }
 
 function cleanExpression(expression)
