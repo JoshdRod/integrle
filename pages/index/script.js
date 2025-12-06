@@ -1,6 +1,6 @@
 // TODO: Eventually, put this in a separate file
 let RAW_SOLUTION = "1/2 x^2 sin(2x) + 1/2 x cos(2x) - 1/4 sin(2x) + c";
-let SOLUTION = expressionToDict(RAW_SOLUTION);
+//let SOLUTION = expressionToDict(RAW_SOLUTION);
 let answerText = document.getElementById("answerText"); // Answer that appears on win modal
 answerText.innerText = `\\(${RAW_SOLUTION}\\)`;
 
@@ -270,7 +270,8 @@ function expressionToComponentList(expression)
 			type: type,
 			leftNode: -1,
 			rightNode: -1,
-			parent: -1
+			parent: -1,
+			depth: -1
 		};
 
 		if (type == "operator" || type == "function")
@@ -300,6 +301,7 @@ function expressionToComponentList(expression)
 				leftNode: -1,
 				rightNode: -1,
 				parent: -1,
+				depth: -1,
 				commutative: true
 			});
 		}
@@ -376,6 +378,7 @@ function postfixToTree(components, index=0, parentIndex=-1, depth=0)
 
 	let currentComponent = components[index];
 	currentComponent.parent = parentIndex;
+	currentComponent.depth = depth;
 
 	switch(currentComponent.type)
 	{
@@ -403,16 +406,103 @@ function postfixToTree(components, index=0, parentIndex=-1, depth=0)
 		return components;
 }
 
+// As there are multiple ways to write the same maths expression, there are multiple graphs that map to equivalent expressions. To compare equality of 2 graphs, they must first both be normalised (essentially, sorting elements under commutative operators by their content)
+// INPUTS: list tree
+// RETURNS: list normalised tree
+function normaliseTree(tree)
+{
+	// Create a dictionary of depth:node indices
+	let layers = {};
+	let maxLayer = 0;
+	for (let i = 0; i < tree.length; i++)
+	{
+		// If layer isn't in dict yet, add it
+		if (layers[tree[i].depth.toString()] == null)
+			layers[tree[i].depth.toString()] = [];
+		// Add node to layer
+		layers[tree[i].depth.toString()].push(i);
+		maxLayer = (tree[i].depth > maxLayer) ? tree[i].depth : maxLayer;
+	}
+	// For each layer,
+	for (let i = maxLayer; i > 0; i--)
+	{
+		// Go up one layer - find commutative nodes with 2 kids
+		for (parentIndex of layers[i-1])
+		{
+			let parentNode = tree[parentIndex];
+			if (parentNode.type == "operator" && parentNode.commutative == true)
+			{
+				// If so, compare contents. If R < L, swap parent's child pointers around
+				let requiresSwap = evaluateIfSwapNeeded(tree, parentNode.leftNode, parentNode.rightNode);
+				if (requiresSwap)
+				{
+					let temp = parentNode.rightNode;
+					parentNode.rightNode = parentNode.leftNode;
+					parentNode.leftNode = temp;
+				}
+			}
+		}
+	}
+	return tree;
+	// FIXME: NEEDS TO ALSO CONVERT -1*<x> under + nodes to -
+}
+
+// Compares 2 (sub)graphs, to determine if the right graph is "greater" than the left.
+// If so, the root nodes of both graphs need swapping in their supergraph.
+// Essentially performs a DFS simultaneously on both graphs, until the contents of the nodes being visited is different.
+// In this case, compare the two. If right graph > left, return true. Else, return false.
+// If no differences found, return false.
+// INPUTS: int left index, int right index, (super)graph
+function evaluateIfSwapNeeded(graph, leftRoot, rightRoot, left=leftRoot, right=rightRoot)
+{
+	// Compare left and right
+	if (graph[right].content > graph[left].content)
+		return true;
+	else if (graph[left].content > graph[right].content)
+		return false;
+	// If same, find next node in DFS of left and right
+	let nextLeftIndex = findNextInDFS(graph, leftRoot, left);
+	let nextRightIndex = findNextInDFS(graph, rightRoot, right);
+
+	// If either = -1, then that graph had been fully traversed. Both graphs are the same, return false
+	if (nextLeftIndex == -1 || nextRightIndex == -1)
+		return false;
+
+	// Else, recurse
+	return evaluateIfSwapNeeded(graph, leftRoot, rightRoot, nextLeftIndex, nextRightIndex);
+}
+
+// Finds the index of the next node that should be observed in a DFS of binary tree
+// INPUTS: binary tree, int index of root node, int index of the current node being considered
+// RETURNS: int index of next node to be considered
+function findNextInDFS(bTree, root, currentNodeIndex)
+{
+	// Find current node
+	let currentNode = bTree[currentNodeIndex];
+	// If has left child, return its index
+	if (currentNode.leftNode != -1)
+		return currentNode.leftNode;
+	// If not, while current node is not root,
+	while (currentNode != 0)
+	{
+		// Set current node to parent
+		currentNode = currentNode.parent;
+		// If parent has right node, return it
+		if (currentNode.rightNode != -1)
+			return currentNode.rightNode;
+	}
+	// If this path is reached, DFS has ended. Return -1
+	return -1;
+	if (currentNode.rightNode != -1)
+		return currentNode.rightNode;
+}
+
 function strToTree(str)
 {
 	comp = expressionToComponentList(str);
 	let pf = componentListToPostfix(comp);
-	for (component of pf)
-	{
-		console.log(component.content, " ");
-	}
-	let tree = postfixToTree(pf.reverse());
-	console.log("Tree: ", tree);
+	let tree = postfixToTree(pf);
+	return tree;
 }
 
 function cleanExpression(expression)
@@ -424,5 +514,3 @@ function cleanExpression(expression)
 	exp = exp.replaceAll(' ', '');
 	return exp;
 }
-
-
