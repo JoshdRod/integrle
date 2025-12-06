@@ -269,7 +269,8 @@ function expressionToComponentList(expression)
 			content: content,
 			type: type,
 			leftNode: -1,
-			rightNode: -1
+			rightNode: -1,
+			parent: -1
 		};
 
 		if (type == "operator" || type == "function")
@@ -298,6 +299,7 @@ function expressionToComponentList(expression)
 				precedence: 1,
 				leftNode: -1,
 				rightNode: -1,
+				parent: -1,
 				commutative: true
 			});
 		}
@@ -366,24 +368,28 @@ function componentListToPostfix(list)
 // Takes a list of components in postfix, and converts into tree
 // INPUTS: list of componets in the tree
 // RETURNS: list Tree
-function postfixToTree(components, index, depth)
+function postfixToTree(components, index=0, parentIndex=-1, depth=0)
 {
 	// Ironically, this works better with prefix, so convert
 	if (depth == 0)
 		components = components.reverse();
+
 	let currentComponent = components[index];
+	currentComponent.parent = parentIndex;
 
 	switch(currentComponent.type)
 	{
 		case "function":
 		case "operator": {
+			let componentIndex = index;
+
 			currentComponent.leftNode = index+1;
-			index = postfixToTree(components, index+1, depth+1);
+			index = postfixToTree(components, index+1, componentIndex, depth+1);
 
 			if (currentComponent.type == "operator")
 			{
 				currentComponent.rightNode = index+1;
-				index = postfixToTree(components, index+1, depth+1);
+				index = postfixToTree(components, index+1, componentIndex, depth+1);
 			}
 		}
 		case "number":
