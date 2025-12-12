@@ -153,22 +153,31 @@ function expressionToComponentList(expression)
 	let i = 0;
 	while (i < exp.length)
 	{
-		// If a negative number that at the start, or after an open bracket/ function definition, add the implicit -1*
-		// e.g: -5x -> -1 * 5 x
-		// e.g: 10*(-x) -> 10 * ( -1 * x )
-		// e.g: sin -x -> sin -1 * x
-		if (
-			(
-				list.length == 0
-				|| list.length > 0 && 
-				(
-					list[list.length - 1].type == "open bracket"
-					|| list[list.length - 1].type == "function"
-				)
-			)
-			&& exp[i] == '-'
-		)
+		if (exp[i] == '-')
 		{
+
+			// If not at start of expression/bracket, add + as well
+			// e.g: 5-2 -> 5+ -1 * 2
+			if
+			(
+				!(list.length == 0 ||
+				list.length > 0 &&
+					(list[list.length - 1].type == "open bracket"
+					|| list[list.length - 1].type == "function"))
+			)
+			{
+				list.push({
+					content: "+",
+					type: "operator",
+					precedence: 0,
+					commutative: true,
+					leftNode: -1,
+					rightNode: -1,
+					parent: -1,
+					depth: -1
+				});
+
+			}
 			content = "-1";
 			type = "number";
 
