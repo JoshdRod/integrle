@@ -354,8 +354,14 @@ function componentListToPostfix(list)
 		// If operator or function, look at stack
 		else if (component.type == "operator" || component.type == "function")
 		{
+			// If function, push
+			// Functions never cause an operator to be popped. e.g: in 1 * 2 + 3, the + causes the * to be popped.
+			// In 1 * sin(3), the sin doesn't cause the * to be popped.
+			if (component.type == "function")
+				operatorStack.push(component);
+
 			// If higher precedence than top of stack, push
-			if (operatorStack.length == 0 || component.precedence > operatorStack[operatorStack.length - 1].precedence)
+			else if (operatorStack.length == 0 || component.precedence > operatorStack[operatorStack.length - 1].precedence)
 			{
 				operatorStack.push(component);
 			}
@@ -456,6 +462,30 @@ function normaliseTree(tree)
 	// FIXME: NEEDS TO ALSO CONVERT -1*<x> under + nodes to -
 }
 
+// Compares 2 binary trees, and returns true if their contents are equal.
+// INPUTS: 2 binary trees - b1, b2
+// RETURNS: bool - are they equal?
+function evaluateIfBTreesEqual(b1, b2)
+{
+	if (b1.length != b2.length)
+		return false;
+
+	// Loop over trees until fully DFS'd
+	// If at any point, corresponding nodes don't match, trees are not equal
+	let b1CurrentNode = 0;
+	let b2CurrentNode = 0;
+	while (b1CurrentNode != -1)
+	{
+		if (b1[b1CurrentNode].content != b2[b2CurrentNode].content)
+			return false;
+		b1CurrentNode = findNextInDFS(b1, 0, b1CurrentNode);
+		b2CurrentNode = findNextInDFS(b2, 0, b2CurrentNode);
+	}
+	// If all equal, graphs are equal!
+	return true;
+
+}
+
 // Compares 2 (sub)graphs, to determine if the right graph is "greater" than the left.
 // If so, the root nodes of both graphs need swapping in their supergraph.
 // Essentially performs a DFS simultaneously on both graphs, until the contents of the nodes being visited is different.
@@ -492,18 +522,19 @@ function findNextInDFS(bTree, root, currentNodeIndex)
 	if (currentNode.leftNode != -1)
 		return currentNode.leftNode;
 	// If not, while current node is not root,
-	while (currentNode != 0)
+	while (currentNodeIndex != root)
 	{
 		// Set current node to parent
-		currentNode = currentNode.parent;
+		let previousNodeIndex = currentNodeIndex;
+		currentNodeIndex = currentNode.parent;
+		currentNode = bTree[currentNodeIndex];
+
 		// If parent has right node, return it
-		if (currentNode.rightNode != -1)
+		if (currentNode.rightNode != -1 && currentNode.rightNode != previousNodeIndex)
 			return currentNode.rightNode;
 	}
 	// If this path is reached, DFS has ended. Return -1
 	return -1;
-	if (currentNode.rightNode != -1)
-		return currentNode.rightNode;
 }
 
 function strToTree(str)
