@@ -1,6 +1,6 @@
 // TODO: Eventually, put this in a separate file
 let RAW_SOLUTION = "1/2 x^2 sin(2x) + 1/2 x cos(2x) - 1/4 sin(2x) + c";
-//let SOLUTION = expressionToDict(RAW_SOLUTION);
+let SOLUTION = normaliseTree(strToTree(RAW_SOLUTION));
 let answerText = document.getElementById("answerText"); // Answer that appears on win modal
 answerText.innerText = `\\(${RAW_SOLUTION}\\)`;
 
@@ -42,42 +42,41 @@ function handleAnswerInputChange()
 {
 	if (event.key == "Enter")
 	{
-		let expressionDict = expressionToDict(answerBox.value);
-		let expressionEvaluation = evaluateExpression(expressionDict);
+		let expressionTree = normaliseTree(strToTree(answerBox.value));
 
 		// Update win modal
-		let answerCorrectness = evaluateCorrectness(expressionDict, SOLUTION);
-		let answerCorrectnessColour = {
-			"red": 255 * (100 - answerCorrectness) / 100,
-			"green": 255 * (answerCorrectness) / 100,
-			"blue": 0
-		};
+		//let answerCorrectness = evaluateCorrectness(expressionTree, SOLUTION);
+		//let answerCorrectnessColour = {
+		//	"red": 255 * (100 - answerCorrectness) / 100,
+		//	"green": 255 * (answerCorrectness) / 100,
+		//	"blue": 0
+		//};
 
 		let responseBox;
 		switch (responseCount)
 		{
 			case 0:
-				response1.innerHTML = expressionEvaluation;
-				colourBox1.innerText = answerCorrectness + '%';
-				colourBox1.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				response1.innerHTML = answerBox.value;
+				//colourBox1.innerText = answerCorrectness + '%';
+				//colourBox1.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 				responseBox = response1;
 				break;
 			case 1:
-				response2.innerHTML = expressionEvaluation;
-				colourBox2.innerText = answerCorrectness + '%';
-				colourBox2.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				response2.innerHTML = answerBox.value;
+				//colourBox2.innerText = answerCorrectness + '%';
+				//colourBox2.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 				responseBox = response2;
 				break;
 			case 2:
-				response3.innerHTML = expressionEvaluation;
-				colourBox3.innerText = answerCorrectness + '%';
-				colourBox3.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				response3.innerHTML = answerBox.value;
+				//colourBox3.innerText = answerCorrectness + '%';
+				//colourBox3.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 				responseBox = response3;
 				break;
 			case 3:
-				response4.innerHTML = expressionEvaluation;
-				colourBox4.innerText = answerCorrectness + '%';
-				colourBox4.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				response4.innerHTML = answerBox.value;
+				//colourBox4.innerText = answerCorrectness + '%';
+				//colourBox4.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 				responseBox = response4;
 				break;
 		}
@@ -86,7 +85,7 @@ function handleAnswerInputChange()
 		MathJax.typeset([responseBox]);
 
 		// Handle win (show pop-up)
-		if (checkWin(expressionDict))
+		if (evaluateIfBTreesEqual(expressionTree, SOLUTION))
 		{
 			winModal.style.display = "flex";
 		}
@@ -143,7 +142,7 @@ function evaluateCorrectness(expressionDict, solutionDict)
 // Expression to component list
 function expressionToComponentList(expression)
 {
-	let Constants = ['e', "pi"];
+	let Constants = ['e', "pi", 'c'];
 	let exp = cleanExpression(expression);
 	let list = [];
 	let content = "";
