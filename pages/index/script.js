@@ -543,23 +543,55 @@ function findNextInDFS(bTree, root, currentNodeIndex)
 function treeToMathJax(tree, currentNodeIndex=0)
 {
 	let currentNode = tree[currentNodeIndex];
+	let output = "";
 	switch (currentNode.type)
 	{
 		case "operator":
 		{
+			// If children of operator are another operator, use ()s
+			let rightNodeIndex = currentNode.rightNode;
+			let rightNode = tree[rightNodeIndex];
+			if (rightNode.type == "operator")
+				output += `(${treeToMathJax(tree, rightNodeIndex)})`;
+			else
+				output += treeToMathJax(tree, rightNodeIndex);
+
 			switch (currentNode.content)
 			{
 				case '/':
-					return `{${treeToMathJax(tree, currentNode.rightNode)}}\\over{${treeToMathJax(tree, currentNode.leftNode)}}`;
+					output += "\\over";
+					break;
+				case '*':
+					break;
 				default:
-					return `{${treeToMathJax(tree, currentNode.rightNode)}}${currentNode.content}{${treeToMathJax(tree, currentNode.leftNode)}}`;
+					output += currentNode.content;
+					break;
 			}
+
+			let leftNodeIndex = currentNode.leftNode;
+			let leftNode = tree[leftNodeIndex];
+			if (leftNode.type == "operator")
+				output += `(${treeToMathJax(tree, leftNodeIndex)})`;
+			else
+				output += treeToMathJax(tree, leftNodeIndex);
+
+			break;
 		}
 		case "function":
-			return `\\${currentNode.content}{${treeToMathJax(tree, currentNode.leftNode)}}`;
+			output += `\\${currentNode.content}`;
+			let leftNodeIndex = currentNode.leftNode;
+			let leftNode = tree[leftNodeIndex];
+			if (leftNode.type == "operator")
+				output += `(${treeToMathJax(tree, leftNodeIndex)})`;
+			else
+				output += `{${treeToMathJax(tree, leftNodeIndex)}}`;
+
+			break;
 		default:
-			return currentNode.content;
+			output += currentNode.content;
+			break;
 	}
+	return output;
 }
 
 function strToTree(str)
