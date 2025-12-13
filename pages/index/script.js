@@ -53,28 +53,29 @@ function handleAnswerInputChange()
 		//};
 
 		let responseBox;
+		let responseMathJax = `\\(${treeToMathJax(expressionTree)}\\)`;
 		switch (responseCount)
 		{
 			case 0:
-				response1.innerHTML = answerBox.value;
+				response1.innerHTML = responseMathJax;
 				//colourBox1.innerText = answerCorrectness + '%';
 				//colourBox1.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 				responseBox = response1;
 				break;
 			case 1:
-				response2.innerHTML = answerBox.value;
+				response2.innerHTML = responseMathJax;
 				//colourBox2.innerText = answerCorrectness + '%';
 				//colourBox2.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 				responseBox = response2;
 				break;
 			case 2:
-				response3.innerHTML = answerBox.value;
+				response3.innerHTML = responseMathJax;
 				//colourBox3.innerText = answerCorrectness + '%';
 				//colourBox3.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 				responseBox = response3;
 				break;
 			case 3:
-				response4.innerHTML = answerBox.value;
+				response4.innerHTML = responseMathJax;
 				//colourBox4.innerText = answerCorrectness + '%';
 				//colourBox4.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 				responseBox = response4;
@@ -82,7 +83,7 @@ function handleAnswerInputChange()
 		}
 		responseCount++;
 		// Render new mathjax
-		MathJax.typeset([responseBox]);
+		MathJax.typeset();
 
 		// Handle win (show pop-up)
 		if (evaluateIfBTreesEqual(expressionTree, SOLUTION))
@@ -534,6 +535,31 @@ function findNextInDFS(bTree, root, currentNodeIndex)
 	}
 	// If this path is reached, DFS has ended. Return -1
 	return -1;
+}
+
+// Converts tree into a string which can.be interpreted by MathJax
+// INPUTS: tree Expression bTree
+// RETURNS: str that can be interpreted by MathJax
+function treeToMathJax(tree, currentNodeIndex=0)
+{
+	let currentNode = tree[currentNodeIndex];
+	switch (currentNode.type)
+	{
+		case "operator":
+		{
+			switch (currentNode.content)
+			{
+				case '/':
+					return `{${treeToMathJax(tree, currentNode.rightNode)}}\\over{${treeToMathJax(tree, currentNode.leftNode)}}`;
+				default:
+					return `{${treeToMathJax(tree, currentNode.rightNode)}}${currentNode.content}{${treeToMathJax(tree, currentNode.leftNode)}}`;
+			}
+		}
+		case "function":
+			return `\\${currentNode.content}{${treeToMathJax(tree, currentNode.leftNode)}}`;
+		default:
+			return currentNode.content;
+	}
 }
 
 function strToTree(str)
