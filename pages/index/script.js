@@ -233,11 +233,12 @@ function expressionToComponentList(expression)
 			depth: -1
 		};
 
-		if (type == "operator" || type == "function")
+		if (type == "operator" || type == "function") {
 			newComponent.precedence = precedence;
-			if (type == "operator")
+			if (type == "operator") {
 				newComponent.commutative = commutative;
-
+			}
+		}
 		list.push(newComponent);
 
 		// Check for implicit * signs
