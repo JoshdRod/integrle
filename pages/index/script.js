@@ -537,7 +537,7 @@ function findNextInDFS(bTree, root, currentNodeIndex)
 	return -1;
 }
 
-// Converts tree into a string which can.be interpreted by MathJax
+// Converts tree into a string which can be interpreted by MathJax
 // INPUTS: tree Expression bTree
 // RETURNS: str that can be interpreted by MathJax
 function treeToMathJax(tree, currentNodeIndex=0)
