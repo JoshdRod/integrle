@@ -58,26 +58,18 @@ function handleAnswerInputChange()
 		{
 			case 0:
 				response1.innerHTML = responseMathJax;
-				//colourBox1.innerText = answerCorrectness + '%';
-				//colourBox1.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 				responseBox = response1;
 				break;
 			case 1:
 				response2.innerHTML = responseMathJax;
-				//colourBox2.innerText = answerCorrectness + '%';
-				//colourBox2.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 				responseBox = response2;
 				break;
 			case 2:
 				response3.innerHTML = responseMathJax;
-				//colourBox3.innerText = answerCorrectness + '%';
-				//colourBox3.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 				responseBox = response3;
 				break;
 			case 3:
 				response4.innerHTML = responseMathJax;
-				//colourBox4.innerText = answerCorrectness + '%';
-				//colourBox4.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
 				responseBox = response4;
 				break;
 		}
@@ -96,48 +88,6 @@ function handleAnswerInputChange()
 function handleCloseModal()
 {
 	winModal.style.display = "none";
-}
-// TODO: Checks if input expression is a valid maths expression in the first place
-function checkValidInputExpression()
-{
-	return;
-}
-
-// Takes in dict of expression, and constructs an evaluation of each term in that expression
-// INPUTS: dict expressionDict
-// RETURNS: str html of answer evaluation (to go in a response block)
-// 		Each term in expression is coloured:
-// 			- Red: Term doesn't exist in answer
-// 			- Yellow: Term does exist, but coefficient is incorrect
-// 			- Green: Term and coefficient correct
-// 		A number is also appended on end, which corresponds to number of missing terms in expression
-function evaluateExpression(expressionDict)
-{
-}
-
-// Ranks term as red, yellow or green
-//	- Red: Term doesn't exist in answer
-//	- Yellow: Term does exist, but coefficient is incorrect
-//	- Green: Term and coefficient correct
-// INPUTS: str term, int coeff, dict solution
-// RETURNS: str red/yellow/green
-function evaluateTerm(term, coeff, solution)
-{
-}
-
-// Calculates number of terms in solution that are missing from expression
-// INPUTS: dict expressionDict, dict solutionDict
-// RETURNS: int number of missing terms
-function calculateMissingTerms(expressionDict, solutionDict)
-{
-}
-
-// Evaluates, as a %, how correct the input expression was.
-// Used for the boxes on the win modal
-// INPUTS: dict expressionDict, dict solutionDict
-// RETURNS: int % correctness of expression
-function evaluateCorrectness(expressionDict, solutionDict)
-{
 }
 
 // Expression to component list
