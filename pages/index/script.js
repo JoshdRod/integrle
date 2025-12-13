@@ -383,7 +383,7 @@ function componentListToPostfix(list)
 }
 
 // Takes a list of components in postfix, and converts into tree
-// INPUTS: list of componets in the tree
+// INPUTS: list of components in the tree
 // RETURNS: list Tree
 function postfixToTree(components, index=0, parentIndex=-1, depth=0)
 {
