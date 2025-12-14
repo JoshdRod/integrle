@@ -547,7 +547,7 @@ function treeToMathJax(tree, currentNodeIndex=0)
 
 function strToTree(str)
 {
-	comp = expressionToComponentList(str);
+	let comp = expressionToComponentList(str);
 	let pf = componentListToPostfix(comp);
 	let tree = postfixToTree(pf);
 	return tree;
