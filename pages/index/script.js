@@ -360,6 +360,7 @@ function postfixToTree(components, index=0, parentIndex=-1, depth=0)
 				currentComponent.rightNode = index+1;
 				index = postfixToTree(components, index+1, componentIndex, depth+1);
 			}
+			break;
 		}
 		case "number":
 		case "constant":
