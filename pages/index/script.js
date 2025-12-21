@@ -248,11 +248,12 @@ function expressionToComponentList(expression)
 			depth: -1
 		};
 
-		if (type == "operator" || type == "function")
+		if (type == "operator" || type == "function") {
 			newComponent.precedence = precedence;
-			if (type == "operator")
+			if (type == "operator") {
 				newComponent.commutative = commutative;
-
+			}
+		}
 		list.push(newComponent);
 
 		// Check for implicit * signs
@@ -374,6 +375,7 @@ function postfixToTree(components, index=0, parentIndex=-1, depth=0)
 				currentComponent.rightNode = index+1;
 				index = postfixToTree(components, index+1, componentIndex, depth+1);
 			}
+			break;
 		}
 		case "number":
 		case "constant":
@@ -590,7 +592,7 @@ function treeToMathJax(tree, currentNodeIndex=0)
 
 function strToTree(str)
 {
-	comp = expressionToComponentList(str);
+	let comp = expressionToComponentList(str);
 	let pf = componentListToPostfix(comp);
 	let tree = postfixToTree(pf);
 	return tree;
