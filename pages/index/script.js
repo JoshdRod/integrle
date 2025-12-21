@@ -289,7 +289,7 @@ function expressionToComponentList(expression)
 // Uses modified Shunting Yard Algorithm
 function componentListToPostfix(list)
 {
-	let infixList = [];
+	let postfixList = [];
 	let operatorStack = [];
 	let index = 0;
 	// Iterate over components
@@ -299,21 +299,21 @@ function componentListToPostfix(list)
 		// If number, constant, or variable, put in output
 		if (["number", "constant", "variable"].includes(component.type))
 		{
-			infixList.push(component);
+			postfixList.push(component);
 		}
 		// If (, recurse and add to string
 		else if (component.type == "open bracket")
 		{
 			let bracketEval = componentListToPostfix(list.slice(index+1));
 			index += bracketEval.index + 1; // +1, as list indices start from 0
-			infixList.push(...bracketEval.infixList);
+			postfixList.push(...bracketEval.postfixList);
 		}
 		// If ), return
 		else if (component.type == "close bracket")
 		{
-			infixList.push(...operatorStack.reverse());
+			postfixList.push(...operatorStack.reverse());
 			return {
-				infixList: infixList,
+				postfixList: postfixList,
 				index: index
 			};
 		}
@@ -336,7 +336,7 @@ function componentListToPostfix(list)
 			{
 				while (operatorStack.length > 0 && component.precedence <= operatorStack[operatorStack.length - 1].precedence)
 				{
-					infixList.push(operatorStack.pop());
+					postfixList.push(operatorStack.pop());
 				}
 				operatorStack.push(component);
 			}
@@ -344,8 +344,8 @@ function componentListToPostfix(list)
 		index++;
 	}
 	// At end, unload operator stack
-	infixList.push(...operatorStack.reverse());
-	return infixList;
+	postfixList.push(...operatorStack.reverse());
+	return postfixList;
 }
 
 // Takes a list of components in postfix, and converts into tree
