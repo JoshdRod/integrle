@@ -38,10 +38,16 @@ const policy = trustedTypes.createPolicy("my-policy",
 
 let responseCount = 0;
 
-// Helper function to convert color object to RGB string
-function getColorString(colorObj)
+// Helper function to convert answer correctness to RGB colour string
+function getColourString(correctness)
 {
-	return `rgb(${colorObj["red"]}, ${colorObj["green"]}, ${colorObj["blue"]})`;
+	let colour = {
+		"red": 255 * (100 - correctness) / 100,
+		"green": 255 * (correctness) / 100,
+		"blue": 0
+	};
+
+	return `rgb(${colour["red"]}, ${colour["green"]}, ${colour["blue"]})`;
 }
 
 function handleAnswerInputChange()
@@ -52,40 +58,34 @@ function handleAnswerInputChange()
 
 		// Update win modal
 		let answerCorrectness = evaluateCorrectness(expressionTree, SOLUTION);
-		let answerCorrectnessColour = {
-			"red": 255 * (100 - answerCorrectness) / 100,
-			"green": 255 * (answerCorrectness) / 100,
-			"blue": 0
-		};
-
+		let correctnessColour = getColourString(answerCorrectness);
 		let responseBox;
 		let responseMathJax = `\\(${treeToMathJax(expressionTree)}\\)`;
-		let backgroundColorString = getColorString(answerCorrectnessColour);
 		switch (responseCount)
 		{
 			case 0:
 				response1.innerHTML = responseMathJax;
 				responseBox = response1;
-				response1.style.backgroundColor = backgroundColorString;
-				colourBox1.style.backgroundColor = backgroundColorString;
+				response1.style.backgroundColor = correctnessColour;
+				colourBox1.style.backgroundColor = correctnessColour;
 				break;
 			case 1:
 				response2.innerHTML = responseMathJax;
 				responseBox = response2;
-				response2.style.backgroundColor = backgroundColorString;
-				colourBox2.style.backgroundColor = backgroundColorString;
+				response2.style.backgroundColor = correctnessColour;
+				colourBox2.style.backgroundColor = correctnessColour;
 				break;
 			case 2:
 				response3.innerHTML = responseMathJax;
 				responseBox = response3;
-				response3.style.backgroundColor = backgroundColorString;
-				colourBox3.style.backgroundColor = backgroundColorString;
+				response3.style.backgroundColor = correctnessColour;
+				colourBox3.style.backgroundColor = correctnessColour;
 				break;
 			case 3:
 				response4.innerHTML = responseMathJax;
 				responseBox = response4;
-				response4.style.backgroundColor = backgroundColorString;
-				colourBox4.style.backgroundColor = backgroundColorString;
+				response4.style.backgroundColor = correctnessColour;
+				colourBox4.style.backgroundColor = correctnessColour;
 				break;
 		}
 		responseCount++;
