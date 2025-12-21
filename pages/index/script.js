@@ -5,6 +5,7 @@ let answerText = document.getElementById("answerText"); // Answer that appears o
 answerText.innerText = `\\(${RAW_SOLUTION}\\)`;
 
 let answerBox = document.getElementById("answerBox");
+let answerBoxMathJax = document.getElementById("userResponseMathJax");
 
 // Response boxes - store previous answers
 let response1 = document.getElementById("response1");
@@ -52,15 +53,22 @@ function getColourString(correctness)
 
 function handleAnswerInputChange()
 {
+	// Re-generate input text box
+	let response = answerBox.value;
+	if (event.key != "Enter" && event.key != "Space")
+		response += event.key;
+
+	let expressionTree = normaliseTree(strToTree(response));
+	let responseMathJax = `\\(${treeToMathJax(expressionTree)}\\)`;
+	answerBoxMathJax.innerHTML = responseMathJax;
+	MathJax.typeset();
+	
 	if (event.key == "Enter")
 	{
-		let expressionTree = normaliseTree(strToTree(answerBox.value));
-
 		// Update win modal
 		let answerCorrectness = evaluateCorrectness(expressionTree, SOLUTION);
 		let correctnessColour = getColourString(answerCorrectness);
 		let responseBox;
-		let responseMathJax = `\\(${treeToMathJax(expressionTree)}\\)`;
 		switch (responseCount)
 		{
 			case 0:
