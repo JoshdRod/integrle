@@ -38,6 +38,18 @@ const policy = trustedTypes.createPolicy("my-policy",
 
 let responseCount = 0;
 
+// Helper function to convert answer correctness to RGB colour string
+function getColourString(correctness)
+{
+	let colour = {
+		"red": 255 * (100 - correctness) / 100,
+		"green": 255 * (correctness) / 100,
+		"blue": 0
+	};
+
+	return `rgb(${colour["red"]}, ${colour["green"]}, ${colour["blue"]})`;
+}
+
 function handleAnswerInputChange()
 {
 	if (event.key == "Enter")
@@ -45,13 +57,8 @@ function handleAnswerInputChange()
 		let expressionTree = normaliseTree(strToTree(answerBox.value));
 
 		// Update win modal
-		//let answerCorrectness = evaluateCorrectness(expressionTree, SOLUTION);
-		//let answerCorrectnessColour = {
-		//	"red": 255 * (100 - answerCorrectness) / 100,
-		//	"green": 255 * (answerCorrectness) / 100,
-		//	"blue": 0
-		//};
-
+		let answerCorrectness = evaluateCorrectness(expressionTree, SOLUTION);
+		let correctnessColour = getColourString(answerCorrectness);
 		let responseBox;
 		let responseMathJax = `\\(${treeToMathJax(expressionTree)}\\)`;
 		switch (responseCount)
@@ -59,18 +66,26 @@ function handleAnswerInputChange()
 			case 0:
 				response1.innerHTML = responseMathJax;
 				responseBox = response1;
+				response1.style.backgroundColor = correctnessColour;
+				colourBox1.style.backgroundColor = correctnessColour;
 				break;
 			case 1:
 				response2.innerHTML = responseMathJax;
 				responseBox = response2;
+				response2.style.backgroundColor = correctnessColour;
+				colourBox2.style.backgroundColor = correctnessColour;
 				break;
 			case 2:
 				response3.innerHTML = responseMathJax;
 				responseBox = response3;
+				response3.style.backgroundColor = correctnessColour;
+				colourBox3.style.backgroundColor = correctnessColour;
 				break;
 			case 3:
 				response4.innerHTML = responseMathJax;
 				responseBox = response4;
+				response4.style.backgroundColor = correctnessColour;
+				colourBox4.style.backgroundColor = correctnessColour;
 				break;
 		}
 		responseCount++;
@@ -436,6 +451,35 @@ function evaluateIfBTreesEqual(b1, b2)
 	// If all equal, graphs are equal!
 	return true;
 
+}
+
+// Takes in 2 expression trees, and compares how similar the 1st is to the 2nd
+// FORMULA: (1 - e^(no. identical nodes / no. nodes in exp2 + difference in no. nodes between 2 trees)) * 100
+// INPUTS: 2 expression trees - b1, b2
+// RETURNS: int (0 - 100) correctness: 100 = correct, 0 = completely incorrect
+function evaluateCorrectness(exp1, exp2)
+{
+	// If trees are equal, then return 100
+	let equal = evaluateIfBTreesEqual(exp1, exp2);
+	if (equal)
+		return 100;
+
+	let difference = Math.abs(exp1.length - exp2.length);
+	// Loop over trees until fully DFS'd
+	// If nodes are identical, add 1 to count
+	let identicalNodesCount = 0;
+	let exp1CurrentNode = 0;
+	let exp2CurrentNode = 0;
+	for (let i = 0; i < Math.min(exp1.length, exp2.length); i++)
+	{
+		if (exp1[exp1CurrentNode].content == exp2[exp2CurrentNode].content)
+			identicalNodesCount++;
+
+		exp1CurrentNode = findNextInDFS(exp1, 0, exp1CurrentNode);
+		exp2CurrentNode = findNextInDFS(exp2, 0, exp2CurrentNode);
+	}
+
+	return (1 - Math.exp(-1 * (identicalNodesCount / (exp2.length + difference)))) * 100;
 }
 
 // Compares 2 (sub)graphs, to determine if the right graph is "greater" than the left.
