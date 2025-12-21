@@ -468,7 +468,7 @@ function evaluateCorrectness(exp1, exp2)
 	let identicalNodesCount = 0;
 	let exp1CurrentNode = 0;
 	let exp2CurrentNode = 0;
-	for (let i = 0; i < Math.min(exp1.length, exp2.length); i++)
+	while (exp1CurrentNode != -1 && exp2CurrentNode != -1)
 	{
 		if (exp1[exp1CurrentNode].content == exp2[exp2CurrentNode].content)
 			identicalNodesCount++;
