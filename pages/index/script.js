@@ -38,6 +38,12 @@ const policy = trustedTypes.createPolicy("my-policy",
 
 let responseCount = 0;
 
+// Helper function to convert color object to RGB string
+function getColorString(colorObj)
+{
+	return `rgb(${colorObj["red"]}, ${colorObj["green"]}, ${colorObj["blue"]})`;
+}
+
 function handleAnswerInputChange()
 {
 	if (event.key == "Enter")
@@ -54,31 +60,32 @@ function handleAnswerInputChange()
 
 		let responseBox;
 		let responseMathJax = `\\(${treeToMathJax(expressionTree)}\\)`;
+		let backgroundColorString = getColorString(answerCorrectnessColour);
 		switch (responseCount)
 		{
 			case 0:
 				response1.innerHTML = responseMathJax;
 				responseBox = response1;
-				response1.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
-				colourBox1.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				response1.style.backgroundColor = backgroundColorString;
+				colourBox1.style.backgroundColor = backgroundColorString;
 				break;
 			case 1:
 				response2.innerHTML = responseMathJax;
 				responseBox = response2;
-				response2.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
-				colourBox2.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				response2.style.backgroundColor = backgroundColorString;
+				colourBox2.style.backgroundColor = backgroundColorString;
 				break;
 			case 2:
 				response3.innerHTML = responseMathJax;
 				responseBox = response3;
-				response3.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
-				colourBox3.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				response3.style.backgroundColor = backgroundColorString;
+				colourBox3.style.backgroundColor = backgroundColorString;
 				break;
 			case 3:
 				response4.innerHTML = responseMathJax;
 				responseBox = response4;
-				response4.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
-				colourBox4.style.backgroundColor = `rgb(${answerCorrectnessColour["red"]}, ${answerCorrectnessColour["green"]}, ${answerCorrectnessColour["blue"]})`;
+				response4.style.backgroundColor = backgroundColorString;
+				colourBox4.style.backgroundColor = backgroundColorString;
 				break;
 		}
 		responseCount++;
