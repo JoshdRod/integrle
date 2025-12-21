@@ -409,7 +409,7 @@ function normaliseTree(tree)
 	for (let i = maxLayer; i > 0; i--)
 	{
 		// Go up one layer - find commutative nodes with 2 kids
-		for (parentIndex of layers[i-1])
+		for (let parentIndex of layers[i-1])
 		{
 			let parentNode = tree[parentIndex];
 			if (parentNode.type == "operator" && parentNode.commutative == true)
