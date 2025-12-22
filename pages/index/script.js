@@ -575,7 +575,7 @@ function treeToMathJax(tree, currentNodeIndex=0)
 			switch (currentNode.content)
 			{
 				case '/':
-					output += "\\over";
+					output += " \\over ";
 					break;
 				case '*':
 					break;
