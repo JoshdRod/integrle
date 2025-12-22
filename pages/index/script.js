@@ -609,7 +609,18 @@ function treeToMathJax(tree, currentNodeIndex=0)
 			let leftNodeIndex = currentNode.leftNode;
 			let leftNode = tree[leftNodeIndex];
 			if (leftNode.type == "operator")
-				output += `(${treeToMathJax(tree, leftNodeIndex)})`;
+			{
+				// If division, use {}s instead of ()s
+				switch (leftNode.content)
+				{
+					case '/':
+						output += `{${treeToMathJax(tree, leftNodeIndex)}}`;
+						break;
+					default:
+						output += `(${treeToMathJax(tree, leftNodeIndex)})`;
+						break;
+				}
+			}
 			else
 				output += `{${treeToMathJax(tree, leftNodeIndex)}}`;
 
