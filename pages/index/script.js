@@ -66,7 +66,17 @@ function handleAnswerInputChange()
 	else if (event.key == "Backspace")
 		response = response.slice(0,-1);
 
-	let expressionTree = strToTree(response);
+	// Attempt to generate expression tree. If input doesn't create valid tree yet, don't
+	let expressionTree = "";
+	try
+	{
+		expressionTree = strToTree(response);
+	}
+	catch (e)
+	{
+		return;
+	}
+
 	let responseMathJax = `\\(${treeToMathJax(expressionTree)}\\)`;
 	let normalisedExpressionTree = normaliseTree(expressionTree);
 	answerBoxMathJax.innerHTML = responseMathJax;
