@@ -58,15 +58,16 @@ function handleAnswerInputChange()
 	if (event.key != "Enter" && event.key != "Space")
 		response += event.key;
 
-	let expressionTree = normaliseTree(strToTree(response));
+	let expressionTree = strToTree(response);
 	let responseMathJax = `\\(${treeToMathJax(expressionTree)}\\)`;
+	let normalisedExpressionTree = normaliseTree(expressionTree);
 	answerBoxMathJax.innerHTML = responseMathJax;
 	MathJax.typeset();
 	
 	if (event.key == "Enter")
 	{
 		// Update win modal
-		let answerCorrectness = evaluateCorrectness(expressionTree, SOLUTION);
+		let answerCorrectness = evaluateCorrectness(normalisedExpressionTree, SOLUTION);
 		let correctnessColour = getColourString(answerCorrectness);
 		let responseBox;
 		switch (responseCount)
