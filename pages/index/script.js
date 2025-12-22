@@ -5,6 +5,7 @@ let answerText = document.getElementById("answerText"); // Answer that appears o
 answerText.innerText = `\\(${RAW_SOLUTION}\\)`;
 
 let answerBox = document.getElementById("answerBox");
+let answerBoxMathJax = document.getElementById("userResponseMathJax");
 
 // Response boxes - store previous answers
 let response1 = document.getElementById("response1");
@@ -50,17 +51,43 @@ function getColourString(correctness)
 	return `rgb(${colour["red"]}, ${colour["green"]}, ${colour["blue"]})`;
 }
 
-function handleAnswerInputChange()
+function handleAnswerInputChange(event)
 {
+	// If invalid character pressed, don't add to text box
+	if (!"abcdefghijklmnopqrstuvwxyz0123456789*/+-^() enter backspace arrowleft arrowright".includes(event.key.toLowerCase()))
+	{
+		event.preventDefault();
+		return;
+	}
+	// Re-generate input text box
+	let response = answerBox.value;
+	if ("sincotax0123456789*/+-^()".includes(event.key))
+		response += event.key;
+	else if (event.key == "Backspace")
+		response = response.slice(0,-1);
+
+	// Attempt to generate expression tree. If input doesn't create valid tree yet, don't
+	let expressionTree = "";
+	try
+	{
+		expressionTree = strToTree(response);
+	}
+	catch (e)
+	{
+		return;
+	}
+
+	let responseMathJax = `\\(${treeToMathJax(expressionTree)}\\)`;
+	let normalisedExpressionTree = normaliseTree(expressionTree);
+	answerBoxMathJax.innerHTML = responseMathJax;
+	MathJax.typeset();
+	
 	if (event.key == "Enter")
 	{
-		let expressionTree = normaliseTree(strToTree(answerBox.value));
-
 		// Update win modal
-		let answerCorrectness = evaluateCorrectness(expressionTree, SOLUTION);
+		let answerCorrectness = evaluateCorrectness(normalisedExpressionTree, SOLUTION);
 		let correctnessColour = getColourString(answerCorrectness);
 		let responseBox;
-		let responseMathJax = `\\(${treeToMathJax(expressionTree)}\\)`;
 		switch (responseCount)
 		{
 			case 0:
@@ -548,14 +575,25 @@ function treeToMathJax(tree, currentNodeIndex=0)
 			let rightNodeIndex = currentNode.rightNode;
 			let rightNode = tree[rightNodeIndex];
 			if (rightNode.type == "operator")
-				output += `(${treeToMathJax(tree, rightNodeIndex)})`;
+			{
+				// If division, use {}s instead of ()s
+				switch (rightNode.content)
+				{
+					case '/':
+						output += `{${treeToMathJax(tree, rightNodeIndex)}}`;
+						break;
+					default:
+						output += `(${treeToMathJax(tree, rightNodeIndex)})`;
+						break;
+				}
+			}
 			else
 				output += treeToMathJax(tree, rightNodeIndex);
 
 			switch (currentNode.content)
 			{
 				case '/':
-					output += "\\over";
+					output += " \\over ";
 					break;
 				case '*':
 					break;
@@ -567,7 +605,18 @@ function treeToMathJax(tree, currentNodeIndex=0)
 			let leftNodeIndex = currentNode.leftNode;
 			let leftNode = tree[leftNodeIndex];
 			if (leftNode.type == "operator")
-				output += `(${treeToMathJax(tree, leftNodeIndex)})`;
+			{
+				// If division, use {}s instead of ()s
+				switch (leftNode.content)
+				{
+					case '/':
+						output += `{${treeToMathJax(tree, leftNodeIndex)}}`;
+						break;
+					default:
+						output += `(${treeToMathJax(tree, leftNodeIndex)})`;
+						break;
+				}
+			}
 			else
 				output += treeToMathJax(tree, leftNodeIndex);
 
@@ -578,11 +627,28 @@ function treeToMathJax(tree, currentNodeIndex=0)
 			let leftNodeIndex = currentNode.leftNode;
 			let leftNode = tree[leftNodeIndex];
 			if (leftNode.type == "operator")
-				output += `(${treeToMathJax(tree, leftNodeIndex)})`;
+			{
+				// If division, use {}s instead of ()s
+				switch (leftNode.content)
+				{
+					case '/':
+						output += `{${treeToMathJax(tree, leftNodeIndex)}}`;
+						break;
+					default:
+						output += `(${treeToMathJax(tree, leftNodeIndex)})`;
+						break;
+				}
+			}
 			else
 				output += `{${treeToMathJax(tree, leftNodeIndex)}}`;
 
 			break;
+		case "number":
+			if (currentNode.content == "-1")
+			{
+				output += '-';
+				break;
+			}
 		default:
 			output += currentNode.content;
 			break;
