@@ -61,8 +61,10 @@ function handleAnswerInputChange()
 	}
 	// Re-generate input text box
 	let response = answerBox.value;
-	if (event.key != "Enter" && event.key != "Space")
+	if ("sincotax0123456789*/+-^()".includes(event.key))
 		response += event.key;
+	else if (event.key == "Backspace")
+		response = response.slice(0,-1);
 
 	let expressionTree = strToTree(response);
 	let responseMathJax = `\\(${treeToMathJax(expressionTree)}\\)`;
