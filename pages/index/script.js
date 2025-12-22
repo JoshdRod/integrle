@@ -51,7 +51,7 @@ function getColourString(correctness)
 	return `rgb(${colour["red"]}, ${colour["green"]}, ${colour["blue"]})`;
 }
 
-function handleAnswerInputChange()
+function handleAnswerInputChange(event)
 {
 	// If invalid character pressed, don't add to text box
 	if (!"abcdefghijklmnopqrstuvwxyz0123456789*/+-^() enter backspace arrowleft arrowright".includes(event.key.toLowerCase()))
