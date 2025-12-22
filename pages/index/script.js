@@ -591,6 +591,12 @@ function treeToMathJax(tree, currentNodeIndex=0)
 				output += `{${treeToMathJax(tree, leftNodeIndex)}}`;
 
 			break;
+		case "number":
+			if (currentNode.content == "-1")
+			{
+				output += '-';
+				break;
+			}
 		default:
 			output += currentNode.content;
 			break;
