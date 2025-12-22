@@ -53,6 +53,12 @@ function getColourString(correctness)
 
 function handleAnswerInputChange()
 {
+	// If invalid character pressed, don't add to text box
+	if (!"abcdefghijklmnopqrstuvwxyz0123456789*/+-^() enter backspace arrowleft arrowright".includes(event.key.toLowerCase()))
+	{
+		event.preventDefault();
+		return;
+	}
 	// Re-generate input text box
 	let response = answerBox.value;
 	if (event.key != "Enter" && event.key != "Space")
