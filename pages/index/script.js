@@ -576,16 +576,22 @@ function treeToMathJax(tree, currentNodeIndex=0)
 			// If children of operator are another operator, use ()s
 			let rightNodeIndex = currentNode.rightNode;
 			let rightNode = tree[rightNodeIndex];
+			let leftNodeIndex = currentNode.leftNode;
+			let leftNode = tree[leftNodeIndex];
+
 			if (rightNode.type == "operator")
 			{
 				// If division, use {}s instead of ()s
 				switch (rightNode.content)
 				{
+					case '+':
+						output += `(${treeToMathJax(tree, rightNodeIndex)})`;
+						break;
 					case '/':
 						output += `{${treeToMathJax(tree, rightNodeIndex)}}`;
 						break;
 					default:
-						output += `(${treeToMathJax(tree, rightNodeIndex)})`;
+						output += `${treeToMathJax(tree, rightNodeIndex)}`;
 						break;
 				}
 			}
@@ -598,24 +604,55 @@ function treeToMathJax(tree, currentNodeIndex=0)
 					output += " \\over ";
 					break;
 				case '*':
-					break;
+					// Implied * sign
+					if (rightNode.type == "number" ||
+						(rightNode.type == "operator" &&
+							(rightNode.content == '+' || rightNode.content == '/' || rightNode.content == '*')
+						)
+					)
+					{
+						if (leftNode.type == "constant" || leftNode.type == "variable" || leftNode.type == "function" ||
+							(leftNode.type == "operator" &&
+								(leftNode.content == '+')
+							)
+						)
+						{
+							break;
+						}
+					}
+					else if (rightNode.type == "variable")
+					{
+						if (leftNode.type == "function" || (leftNode.type == "operator" && leftNode.content == '+'))
+							break;
+					}
+					else if (rightNode.type == "function")
+					{
+						if (leftNode.type == "function")
+							break;
+					}
+					else
+					{
+						output += '*';
+						break;
+					}
 				default:
 					output += currentNode.content;
 					break;
 			}
 
-			let leftNodeIndex = currentNode.leftNode;
-			let leftNode = tree[leftNodeIndex];
 			if (leftNode.type == "operator")
 			{
 				// If division, use {}s instead of ()s
 				switch (leftNode.content)
 				{
+					case '+':
+						output += `(${treeToMathJax(tree, leftNodeIndex)})`;
+						break;
 					case '/':
 						output += `{${treeToMathJax(tree, leftNodeIndex)}}`;
 						break;
 					default:
-						output += `(${treeToMathJax(tree, leftNodeIndex)})`;
+						output += `${treeToMathJax(tree, leftNodeIndex)}`;
 						break;
 				}
 			}
@@ -642,7 +679,7 @@ function treeToMathJax(tree, currentNodeIndex=0)
 				}
 			}
 			else
-				output += `{${treeToMathJax(tree, leftNodeIndex)}}`;
+				output += `({${treeToMathJax(tree, leftNodeIndex)}})`;
 
 			break;
 		case "number":
