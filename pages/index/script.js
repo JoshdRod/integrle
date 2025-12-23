@@ -334,6 +334,8 @@ function componentListToPostfix(list)
 			let bracketEval = componentListToPostfix(list.slice(index+1));
 			index += bracketEval.index + 1; // +1, as list indices start from 0
 			postfixList.push(...bracketEval.postfixList);
+			if (operatorStack.length > 0)
+				postfixList.push(operatorStack.pop());
 		}
 		// If ), return
 		else if (component.type == "close bracket")
