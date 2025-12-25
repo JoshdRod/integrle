@@ -623,21 +623,18 @@ function treeToMathJax(tree, currentNodeIndex=0)
 							break;
 						}
 					}
-					else if (rightNode.type == "variable")
+					if (rightNode.type == "variable")
 					{
 						if (leftNode.type == "function" || (leftNode.type == "operator" && leftNode.content == '+'))
 							break;
 					}
-					else if (rightNode.type == "function")
+					if (rightNode.type == "function")
 					{
 						if (leftNode.type == "function")
 							break;
 					}
-					else
-					{
-						output += '*';
-						break;
-					}
+					output += '*';
+					break;
 				case '+':
 					// If addition is actually representing a subtraction, ignore + sign (e.g: 1-2 -> 1+(-1*2))
 					if (leftNode.type == "operator" && leftNode.content == '*')
