@@ -605,6 +605,9 @@ function treeToMathJax(tree, currentNodeIndex=0)
 					break;
 				case '*':
 					// Implied * sign
+					// Due to mutiplication representing a -ive number (e.g: -4 -> -1 * 4)
+					if (rightNode.type == "number" && rightNode.content == "-1")
+						break;
 					if (rightNode.type == "number" ||
 						(rightNode.type == "operator" &&
 							(rightNode.content == '+' || rightNode.content == '/' || rightNode.content == '*')
@@ -633,6 +636,18 @@ function treeToMathJax(tree, currentNodeIndex=0)
 					else
 					{
 						output += '*';
+						break;
+					}
+				case '+':
+					// If addition is actually representing a subtraction, ignore + sign (e.g: 1-2 -> 1+(-1*2))
+					if (leftNode.type == "operator" && leftNode.content == '*')
+					{
+						if (tree[leftNode.rightNode].type == "number" && tree[leftNode.rightNode].content == '-1')
+							break;
+					}
+					else
+					{
+						output += '+';
 						break;
 					}
 				default:
