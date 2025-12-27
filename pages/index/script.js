@@ -179,7 +179,7 @@ function expressionToComponentList(expression)
 		// If number, find end of num and add whole num
 		else if (!isNaN(exp[i]))
 		{
-			let found = false;
+			let foundNumberEnd = false;
 			for (let j = i; j < exp.length; j++)
 			{
 				if (isNaN(exp[j]))
@@ -188,11 +188,11 @@ function expressionToComponentList(expression)
 					type = "number";
 
 					i = j;
-					found = true;
+					foundNumberEnd = true;
 					break;
 				}
 			}
-			if (found == false) // If can't find any non-nums, then number extends to end of string
+			if (foundNumberEnd == false) // If can't find any non-nums, then number extends to end of string
 			{
 				content = exp.slice(i);
 				type = "number";
