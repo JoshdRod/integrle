@@ -77,7 +77,7 @@ function handleAnswerInputChange(event)
 		return;
 	}
 
-	let responseMathJax = `\\(${treeToMathJax(expressionTree)}\\)`;
+	let responseMathJax = policy.createHTML(`\\(${treeToMathJax(expressionTree)}\\)`);
 	let normalisedExpressionTree = normaliseTree(expressionTree);
 	answerBoxMathJax.innerHTML = responseMathJax;
 	MathJax.typeset();
