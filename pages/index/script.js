@@ -232,7 +232,7 @@ function expressionToComponentList(expression)
 		// If other letters, treat as function/constant, add to list
 		else if (exp[i].toUpperCase() != exp[i].toLowerCase())
 		{
-			let found = false;
+			let foundFunctionNameEnd = false;
 			// Go until x, constant, or non-letter found
 			for (let j = i; j < exp.length; j++)
 			{
@@ -241,12 +241,12 @@ function expressionToComponentList(expression)
 					content = exp.slice(i, j);
 
 					i = j;
-					found = true;
+					foundFunctionNameEnd = true;
 					break;
 				}
 			}
 			// If for loop finishes, then function name extends to end of string
-			if (found == false)
+			if (foundFunctionNameEnd == false)
 			{
 				content = exp.slice(i);
 
