@@ -455,7 +455,6 @@ function normaliseTree(tree)
 		}
 	}
 	return tree;
-	// FIXME: NEEDS TO ALSO CONVERT -1*<x> under + nodes to -
 }
 
 // Compares 2 binary trees, and returns true if their contents are equal.
