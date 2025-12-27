@@ -716,10 +716,10 @@ function strToTree(str)
 
 function cleanExpression(expression)
 {
-	let exp = expression;
+	let cleanExpression = expression;
 	// Remove all line breaks
-	exp = exp.replaceAll('\n', '');
+	cleanExpression = cleanExpression.replaceAll('\n', '');
 	// Remove all whitespace
-	exp = exp.replaceAll(' ', '');
-	return exp;
+	cleanExpression = cleanExpression.replaceAll(' ', '');
+	return cleanExpression;
 }
