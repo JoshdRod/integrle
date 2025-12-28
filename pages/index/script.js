@@ -433,7 +433,7 @@ function normaliseTree(tree, rootNodeIndex=0)
 			let terms = findCommutativeNodes(tree, currentNodeIndex, currentNode.content);
 			// Sort nodes in list by content
 			terms = sortCommutativeNodes(tree, terms);
-		// Add nodes back to tree in content order
+			// Add nodes back to tree in content order
 		}
 	}
 }
@@ -461,13 +461,15 @@ function sortCommutativeNodes(tree, nodes)
 	return nodes;
 }
 
-// Finds nodes in expression tree that are commutative under an operator in the expression
+// Finds nodes in expression tree that are commutative under an operator in the expression, and their location relative to their parent
 // INPUTS: tree, int index of operator node, str type of operator (* or +)
-// RETURNS: list[int] of indices that are commutative under the operator tree[n], where n is the first currentNode
+// RETURNS: list[int] of indices that are commutative under the operator tree[n], where n is the first currentNode,
+// 		list[obj] of locations of nodes, relative to their parent  ({index of parent, side of parent node is on}).
 function findCommutativeNodes(tree, opNodeIndex, operator)
 {
 	let opNode = tree[opNodeIndex];
 	let commutativeNodesList = [];
+	let commutativeParentsList = [];
 	let nodesToCheck = [];
 
 	let leftNodeIndex = opNode.leftNode;
@@ -483,6 +485,11 @@ function findCommutativeNodes(tree, opNodeIndex, operator)
 		if (node.type != "operator" || node.commutative == false)
 		{
 			commutativeNodesList.push(tree.indexOf(node));
+			let parentNode = tree[node.parent];
+			commutativeParentsList.push({
+				"index": node.parent,
+				"side": parentNode.leftNode == tree.indexOf(node) ? 'L' : 'R'
+			}); // TODO: UNTESTED!!
 			continue;
 		}
 
