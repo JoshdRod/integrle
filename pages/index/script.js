@@ -431,10 +431,34 @@ function normaliseTree(tree, rootNodeIndex=0)
 		if (currentNode.type == "operator" && currentNode.commutative == true)
 		{
 			let terms = findCommutativeNodes(tree, currentNodeIndex, currentNode.content);
-		// Sort nodes in list by content
+			// Sort nodes in list by content
+			terms = sortCommutativeNodes(tree, terms);
 		// Add nodes back to tree in content order
 		}
 	}
+}
+
+// Sorts nodes that are commutative under an operator by their content
+// This is so they can be moved around the tree to normalise it
+// INPUTS: tree, list of nodes
+// RETURNS: list[int] of node indices, ordered by content
+function sortCommutativeNodes(tree, nodes)
+{
+	// Implementing a bubble sort here, as lists should be very small (min 2, rarely much greater)
+	for (let i = 1; i < nodes.length; i++)
+	{
+		for (let j = 0; j < nodes.length - i; j++)
+		{
+			console.log(j);
+			if (evaluateIfSwapNeeded(tree, nodes[j], nodes[j+1]))
+			{
+				let temp = nodes[j];
+				nodes[j] = nodes[j+1];
+				nodes[j+1] = temp;
+			}
+		}
+	}
+	return nodes;
 }
 
 // Finds nodes in expression tree that are commutative under an operator in the expression
@@ -454,13 +478,10 @@ function findCommutativeNodes(tree, opNodeIndex, operator)
 	let rightNode = tree[rightNodeIndex];
 	nodesToCheck.push(rightNode);
 
-	console.log(`Nodes to check: ${nodesToCheck}`);
 	for (node of nodesToCheck)
 	{
-		console.log(node);
 		if (node.type != "operator" || node.commutative == false)
 		{
-			console.log(`Hey! ${node}`);
 			commutativeNodesList.push(tree.indexOf(node));
 			continue;
 		}
@@ -490,6 +511,8 @@ function testFunc(treeStr)
 	let tree = strToTree(treeStr);
 	console.log(tree);
 	let commutativeNodes = findCommutativeNodes(tree, 0, '+');
+	console.log(commutativeNodes);
+	let normalisedNodesList = sortCommutativeNodes(tree, commutativeNodes);
 	console.log(commutativeNodes);
 	return;
 }
