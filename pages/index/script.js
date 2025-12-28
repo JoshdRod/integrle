@@ -1,6 +1,6 @@
 // TODO: Eventually, put this in a separate file
 let RAW_SOLUTION = "1/2 x^2 sin(2x) + 1/2 x cos(2x) - 1/4 sin(2x) + c";
-let SOLUTION = normaliseTree(strToTree(RAW_SOLUTION));
+let SOLUTION = strToTree(RAW_SOLUTION); // TODO: Put normalise back after normalisation fixed!
 let answerText = document.getElementById("answerText"); // Answer that appears on win modal
 answerText.innerText = `\\(${RAW_SOLUTION}\\)`;
 
@@ -420,41 +420,78 @@ function postfixToTree(components, index=0, parentIndex=-1, depth=0)
 // As there are multiple ways to write the same maths expression, there are multiple graphs that map to equivalent expressions. To compare equality of 2 graphs, they must first both be normalised (essentially, sorting elements under commutative operators by their content)
 // INPUTS: list tree
 // RETURNS: list normalised tree
-function normaliseTree(tree)
+function normaliseTree(tree, rootNodeIndex=0)
 {
-	// Create a dictionary of depth:node indices
-	let layers = {};
-	let maxLayer = 0;
-	for (let i = 0; i < tree.length; i++)
+	let currentNodeIndex = rootNodeIndex;
+	while (currentNodeIndex != -1)
 	{
-		// If layer isn't in dict yet, add it
-		if (layers[tree[i].depth.toString()] == null)
-			layers[tree[i].depth.toString()] = [];
-		// Add node to layer
-		layers[tree[i].depth.toString()].push(i);
-		maxLayer = (tree[i].depth > maxLayer) ? tree[i].depth : maxLayer;
-	}
-	// For each layer,
-	for (let i = maxLayer; i > 0; i--)
-	{
-		// Go up one layer - find commutative nodes with 2 kids
-		for (let parentIndex of layers[i-1])
+		// DFS through tree
+		let currentNode = tree[currentNodeIndex];
+		// If commutative node found, add children to list
+		if (currentNode.type == "operator" && currentNode.commutative == true)
 		{
-			let parentNode = tree[parentIndex];
-			if (parentNode.type == "operator" && parentNode.commutative == true)
-			{
-				// If so, compare contents. If R < L, swap parent's child pointers around
-				let requiresSwap = evaluateIfSwapNeeded(tree, parentNode.leftNode, parentNode.rightNode);
-				if (requiresSwap)
-				{
-					let temp = parentNode.rightNode;
-					parentNode.rightNode = parentNode.leftNode;
-					parentNode.leftNode = temp;
-				}
-			}
+			let terms = findCommutativeNodes(tree, currentNodeIndex, currentNode.content);
+		// Sort nodes in list by content
+		// Add nodes back to tree in content order
 		}
 	}
-	return tree;
+}
+
+// Finds nodes in expression tree that are commutative under an operator in the expression
+// INPUTS: tree, int index of operator node, str type of operator (* or +)
+// RETURNS: list[int] of indices that are commutative under the operator tree[n], where n is the first currentNode
+function findCommutativeNodes(tree, opNodeIndex, operator)
+{
+	let opNode = tree[opNodeIndex];
+	let commutativeNodesList = [];
+	let nodesToCheck = [];
+
+	let leftNodeIndex = opNode.leftNode;
+	let leftNode = tree[leftNodeIndex];
+	nodesToCheck.push(leftNode);
+
+	let rightNodeIndex = opNode.rightNode;
+	let rightNode = tree[rightNodeIndex];
+	nodesToCheck.push(rightNode);
+
+	console.log(`Nodes to check: ${nodesToCheck}`);
+	for (node of nodesToCheck)
+	{
+		console.log(node);
+		if (node.type != "operator" || node.commutative == false)
+		{
+			console.log(`Hey! ${node}`);
+			commutativeNodesList.push(tree.indexOf(node));
+			continue;
+		}
+
+		// If commutative node of different type (* instead of +) found, normalise that subtree, then add to list
+		if (node.content != operator)
+		{
+			//normaliseTree(tree, tree.indexOf(node)); TODO: Add this back once normalisation works
+			commutativeNodesList.push(tree.indexOf(node));
+			continue;
+		}
+		// If commutative node of same type found, check children
+		let leftNodeIndex = node.leftNode;
+		let leftNode = tree[leftNodeIndex];
+		nodesToCheck.push(leftNode);
+
+		let rightNodeIndex = node.rightNode;
+		let rightNode = tree[rightNodeIndex];
+		nodesToCheck.push(rightNode);
+	}
+	return commutativeNodesList;
+}
+
+function testFunc(treeStr)
+{
+	console.log("Hello world!");
+	let tree = strToTree(treeStr);
+	console.log(tree);
+	let commutativeNodes = findCommutativeNodes(tree, 0, '+');
+	console.log(commutativeNodes);
+	return;
 }
 
 // Compares 2 binary trees, and returns true if their contents are equal.
