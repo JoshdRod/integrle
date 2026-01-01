@@ -427,7 +427,7 @@ function normaliseTree(tree, rootNodeIndex=0)
 	while (currentNodeIndex != -1)
 	{
 		let currentNode = tree[currentNodeIndex];
-		if (!checkDivisorIsProduct(tree, currentNode))
+		if (!checkDividendIsProduct(tree, currentNode))
 		{
 			currentNodeIndex = findNextInDFS(tree, 0, currentNodeIndex);
 			continue;
@@ -581,8 +581,8 @@ function findCommutativeNodes(tree, opNodeIndex, operator)
 // Checks whether current node is a /, and if its dividend is a product.
 // Essentially, check for divisions in form of ab/c (as these need to be normalised to a/b * c)
 // INPUTS: tree, node in tree
-// RETURNS: bool true if divisor is product, false if not
-function checkDivisorIsProduct(tree, node)
+// RETURNS: bool true if dividend is product, false if not
+function checkDividendIsProduct(tree, node)
 {
 	// Check if node is /, and right child is *
 	if (node.type != "operator" || node.content != '/')
