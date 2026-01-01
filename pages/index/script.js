@@ -489,6 +489,20 @@ function normaliseTree(tree, rootNodeIndex=0)
 
 		tree.push(multiplyNode);
 
+		// If / is at front of list, we need to swap the / and * around.
+		if (currentNodeIndex == 0)
+		{
+			let temp = multiplyNode;
+			tree[tree.indexOf(multiplyNode)] = currentNode;
+			tree[0] = temp;
+
+			multiplyNode.parent = -1;
+			multiplyNode.rightNode = tree.indexOf(currentNode);
+			// Fix children of /
+			let b = tree[currentNode.leftNode];
+			b.parent = tree.indexOf(currentNode);
+		}
+
 		currentNode.parent = tree.indexOf(multiplyNode);
 		a.parent = tree.indexOf(multiplyNode);
 
