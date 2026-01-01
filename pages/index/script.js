@@ -508,8 +508,6 @@ function checkDividendIsProduct(tree, node)
 	// Check if node is /, and right child is *
 	if (node.type != "operator" || node.content != '/')
 		return false;
-	if (node.rightNode == -1)
-		return false;
 
 	let currentRightNode = tree[node.rightNode];
 	if (currentRightNode.type != "operator" || currentRightNode.content != '*')
