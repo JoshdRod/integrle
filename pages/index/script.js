@@ -397,6 +397,9 @@ function normaliseTree(tree, rootNodeIndex=0)
 
 		// Make a (right child of *) the right child of /
 		let currentRightNode = tree.Get(currentNode.rightNode);
+
+		// If / is root node, make * root node
+		tree.root = tree.Find(currentRightNode);
 		currentNode.rightNode = currentRightNode.rightNode;
 		let a = tree.Get(currentNode.rightNode);
 		a.parent = tree.Find(currentNode);
@@ -411,11 +414,8 @@ function normaliseTree(tree, rootNodeIndex=0)
 
 	// Create a dictionary of depth:node indices
 	currentNodeIndex = tree.root;
-	console.log(tree);
 	for (let i = 0; i < tree.length; i++)
 	{
-		console.log(i);
-		console.log(currentNodeIndex);
 		let currentNode = tree.Get(currentNodeIndex);
 		// If commutative node found, add children to list
 		if (currentNode.type == NodeType.OPERATOR && currentNode.commutative == true)
