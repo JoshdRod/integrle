@@ -434,6 +434,22 @@ function normaliseTree(tree, rootNodeIndex=0)
 		}
 
 		let currentRightNode = tree[currentNode.rightNode];
+		// If / is at front of list, we need to swap the / and * around.
+		if (currentNodeIndex == 0)
+		{
+			currentRightNode.parent = -1;
+			let temp = currentRightNode;
+			tree[currentNode.rightNode] = currentNode;
+			tree[0] = temp;
+
+			// Fix children
+			let b = tree[currentNode.leftNode];
+			b.parent = tree.indexOf(currentNode);
+
+			let c = tree[currentRightNode.leftNode];
+			c.parent = 0;
+		}
+
 		// Check quotient is in form ac/b, and needs to be transformed
 		// (Current node is /, and right child is *
 				// Make a (right child of *) the right child of /
@@ -445,7 +461,6 @@ function normaliseTree(tree, rootNodeIndex=0)
 		currentRightNode.rightNode = tree.indexOf(currentNode);
 		currentNode.parent = tree.indexOf(currentRightNode);
 
-		// TODO: If / is at front of list, we need to swap the / and * around.
 		currentNodeIndex = findNextInDFS(tree, 0, tree.indexOf(currentNode));
 	}
 
