@@ -464,6 +464,53 @@ function normaliseTree(tree, rootNodeIndex=0)
 		currentNodeIndex = findNextInDFS(tree, 0, tree.indexOf(currentNode));
 	}
 
+	// Convert all quotients to form 1/b * a
+	currentNodeIndex = 0;
+	while (currentNodeIndex != -1)
+	{
+		let currentNode = tree[currentNodeIndex];
+		if (!checkDividendIsNot1(tree, currentNode))
+		{
+			currentNodeIndex = findNextInDFS(tree, 0, currentNodeIndex);
+			continue;
+		}
+
+		let a = tree[currentNode.rightNode];
+
+		// Add * node
+		let multiplyNode = {
+			content: '*',
+			type: "operator",
+			leftNode: tree.indexOf(a),
+			rightNode: currentNodeIndex,
+			parent: currentNode.parent,
+			depth: -1
+		};
+
+		tree.push(multiplyNode);
+
+		currentNode.parent = tree.indexOf(multiplyNode);
+		a.parent = tree.indexOf(multiplyNode);
+
+		// Add 1 node
+		let oneNode = {
+			content: '1',
+			type: "number",
+			leftNode: -1,
+			rightNode: -1,
+			parent: tree.indexOf(currentNode),
+			depth: -1
+		};
+
+		tree.push(oneNode);
+		currentNode.rightNode = tree.indexOf(oneNode);
+
+		// Change current node index to index of * (to traverse over a)
+		currentNodeIndex = tree.indexOf(multiplyNode);
+
+		currentNodeIndex = findNextInDFS(tree, 0, tree.indexOf(currentNode));
+	}
+
 	// Create a dictionary of depth:node indices
 	let layers = {};
 	let maxLayer = 0;
@@ -587,11 +634,26 @@ function checkDividendIsProduct(tree, node)
 	// Check if node is /, and right child is *
 	if (node.type != "operator" || node.content != '/')
 		return false;
-	if (node.rightNode == -1)
-		return false;
 
 	let currentRightNode = tree[node.rightNode];
 	if (currentRightNode.type != "operator" || currentRightNode.content != '*')
+		return false;
+
+	return true;
+}
+
+// Checks whether current node is a /, and is dividend is something other than 1
+// Essentially, checks for divisions in the form of a/b (as these need to be normalised to 1/b * a)
+// INPUTS: tree, node in tree
+// RETURNS: bool true is dividend is not 1, false if it is
+function checkDividendIsNot1(tree, node)
+{
+	// Check if node is /, and right child is not 1
+	if (node.type != "operator" || node.content != '/')
+		return false;
+
+	let currentRightNode = tree[node.rightNode];
+	if (currentRightNode.type == "number" && currentRightNode.content == '1')
 		return false;
 
 	return true;
