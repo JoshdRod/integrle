@@ -1,6 +1,6 @@
 // TODO: Eventually, put this in a separate file
 let RAW_SOLUTION = "1/2 x^2 sin(2x) + 1/2 x cos(2x) - 1/4 sin(2x) + c";
-let SOLUTION = normaliseTree(strToTree(RAW_SOLUTION));
+let SOLUTION = strToTree(RAW_SOLUTION); // TODO: Add normaliseTree back
 let answerText = document.getElementById("answerText"); // Answer that appears on win modal
 answerText.innerText = `\\(${RAW_SOLUTION}\\)`;
 
@@ -382,9 +382,40 @@ function postfixToTree(components, index=0, parentIndex=-1, depth=0)
 // RETURNS: list normalised tree
 function normaliseTree(tree, rootNodeIndex=0)
 {
-	let currentNodeIndex = rootNodeIndex;
+	// Convert all quotients to form a/b * c
+	let currentNodeIndex = 0;
 	while (currentNodeIndex != -1)
 	{
+		// Check quotient is in form ac/b, and needs to be transformed
+		// (Current node is /, and right child is *)
+		let currentNode = tree.Get(currentNodeIndex);
+		if (!checkDivisorIsProduct(tree, currentNode))
+		{
+			currentNodeIndex = findNextInDFS(tree, 0, currentNodeIndex);
+			continue;
+		}
+
+		// Make a (right child of *) the right child of /
+		let currentRightNode = tree.Get(currentNode.rightNode);
+		currentNode.rightNode = currentRightNode.rightNode;
+		let a = tree.Get(currentNode.rightNode);
+		a.parent = tree.Find(currentNode);
+
+		// Make / the right child of *
+		currentRightNode.rightNode = tree.Find(currentNode);
+		currentNode.parent = tree.Find(currentRightNode);
+
+		// TODO: If / is at front of list, we need to swap the / and * around.
+		currentNodeIndex = findNextInDFS(tree, 0, tree.Find(currentNode));
+	}
+
+	// Create a dictionary of depth:node indices
+	currentNodeIndex = tree.root;
+	console.log(tree);
+	for (let i = 0; i < tree.length; i++)
+	{
+		console.log(i);
+		console.log(currentNodeIndex);
 		let currentNode = tree.Get(currentNodeIndex);
 		// If commutative node found, add children to list
 		if (currentNode.type == NodeType.OPERATOR && currentNode.commutative == true)
@@ -492,6 +523,25 @@ function findCommutativeNodes(tree, opNodeIndex, operator)
 	}
 	return {"nodes": commutativeNodesList,
 		"parents": commutativeParentsList};
+}
+
+// Checks whether current node is a /, and if its dividend is a product.
+// Essentially, check for divisions in form of ab/c (as these need to be normalised to a/b * c)
+// INPUTS: tree, node in tree
+// RETURNS: bool true if divisor is product, false if not
+function checkDivisorIsProduct(tree, node)
+{
+	// Check if node is /, and right child is *
+	if (node.type != NodeType.OPERATOR || node.content != '/')
+		return false;
+	if (node.rightNode == -1)
+		return false;
+
+	let currentRightNode = tree.Get(node.rightNode);
+	if (currentRightNode.type != NodeType.OPERATOR || currentRightNode.content != '*')
+		return false;
+
+	return true;
 }
 
 // Compares 2 binary trees, and returns true if their contents are equal.
