@@ -534,18 +534,6 @@ function findCommutativeNodes(tree, opNodeIndex, operator)
 		"parents": commutativeParentsList};
 }
 
-function testFunc(treeStr)
-{
-	console.log("Hello world!");
-	let tree = strToTree(treeStr);
-	console.log(tree);
-	let commutativeNodes = findCommutativeNodes(tree, 0, '+');
-	console.log(commutativeNodes);
-	let normalisedNodesList = sortCommutativeNodes(tree, commutativeNodes);
-	console.log(commutativeNodes);
-	return;
-}
-
 // Compares 2 binary trees, and returns true if their contents are equal.
 // INPUTS: 2 binary trees - b1, b2
 // RETURNS: bool - are they equal?
