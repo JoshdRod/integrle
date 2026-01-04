@@ -464,7 +464,7 @@ function normaliseTree(tree, rootNodeIndex=0)
 		currentNodeIndex = findNextInDFS(tree, 0, tree.indexOf(currentNode));
 	}
 
-	// Convert all quotients to form 1/b * a
+// Convert all quotients to form 1/b * a
 	currentNodeIndex = 0;
 	while (currentNodeIndex != -1)
 	{
@@ -501,6 +501,13 @@ function normaliseTree(tree, rootNodeIndex=0)
 			// Fix children of /
 			let b = tree[currentNode.leftNode];
 			b.parent = tree.indexOf(currentNode);
+		}
+
+		// If not, make * the right node if its parent
+		else
+		{
+			let multiplyNodeParent = tree[currentNode.parent];
+			multiplyNodeParent.rightNode = tree.indexOf(multiplyNode);
 		}
 
 		currentNode.parent = tree.indexOf(multiplyNode);
