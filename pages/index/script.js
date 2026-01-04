@@ -1,6 +1,6 @@
 // TODO: Eventually, put this in a separate file
 let RAW_SOLUTION = "1/2 x^2 sin(2x) + 1/2 x cos(2x) - 1/4 sin(2x) + c";
-let SOLUTION = normaliseTree(strToTree(RAW_SOLUTION));
+let SOLUTION = strToTree(RAW_SOLUTION); // TODO: Put normalise back after normalisation fixed!
 let answerText = document.getElementById("answerText"); // Answer that appears on win modal
 answerText.innerText = `\\(${RAW_SOLUTION}\\)`;
 
@@ -420,41 +420,157 @@ function postfixToTree(components, index=0, parentIndex=-1, depth=0)
 // As there are multiple ways to write the same maths expression, there are multiple graphs that map to equivalent expressions. To compare equality of 2 graphs, they must first both be normalised (essentially, sorting elements under commutative operators by their content)
 // INPUTS: list tree
 // RETURNS: list normalised tree
-function normaliseTree(tree)
+function normaliseTree(tree, rootNodeIndex=0)
 {
-	// Create a dictionary of depth:node indices
-	let layers = {};
-	let maxLayer = 0;
-	for (let i = 0; i < tree.length; i++)
+	let currentNodeIndex = rootNodeIndex;
+	while (currentNodeIndex != -1)
 	{
-		// If layer isn't in dict yet, add it
-		if (layers[tree[i].depth.toString()] == null)
-			layers[tree[i].depth.toString()] = [];
-		// Add node to layer
-		layers[tree[i].depth.toString()].push(i);
-		maxLayer = (tree[i].depth > maxLayer) ? tree[i].depth : maxLayer;
-	}
-	// For each layer,
-	for (let i = maxLayer; i > 0; i--)
-	{
-		// Go up one layer - find commutative nodes with 2 kids
-		for (let parentIndex of layers[i-1])
+		let currentNode = tree[currentNodeIndex];
+		// If commutative node found, add children to list
+		if (currentNode.type == "operator" && currentNode.commutative == true)
 		{
-			let parentNode = tree[parentIndex];
-			if (parentNode.type == "operator" && parentNode.commutative == true)
+			let terms = findCommutativeNodes(tree, currentNodeIndex, currentNode.content);
+			let commutativeNodes = terms.nodes;
+			let locationsToPutCommutativeNodes = terms.parents;
+
+			// Sort nodes in list by content
+			commutativeNodes = sortCommutativeNodes(tree, commutativeNodes);
+			// Add nodes back to tree in content order
+			for (let i = 0; i < locationsToPutCommutativeNodes.length; i++)
 			{
-				// If so, compare contents. If R < L, swap parent's child pointers around
-				let requiresSwap = evaluateIfSwapNeeded(tree, parentNode.leftNode, parentNode.rightNode);
-				if (requiresSwap)
-				{
-					let temp = parentNode.rightNode;
-					parentNode.rightNode = parentNode.leftNode;
-					parentNode.leftNode = temp;
-				}
+				let location = locationsToPutCommutativeNodes[i];
+				if (location.side == 'L')
+					tree[location.index].leftNode = commutativeNodes[i];
+				else
+					tree[location.index].rightNode = commutativeNodes[i];
+			}
+		}
+		// DFS through tree
+		currentNodeIndex = findNextInDFS(tree, rootNodeIndex, currentNodeIndex);
+	}
+	return tree;
+}
+
+// Sorts nodes that are commutative under an operator by their content
+// This is so they can be moved around the tree to normalise it
+// INPUTS: tree, list of nodes
+// RETURNS: list[int] of node indices, ordered by content
+function sortCommutativeNodes(tree, nodes)
+{
+	// Implementing a bubble sort here, as lists should be very small (min 2, rarely much greater)
+	for (let i = 1; i < nodes.length; i++)
+	{
+		for (let j = 0; j < nodes.length - i; j++)
+		{
+			let terms = findCommutativeNodes(tree, currentNodeIndex, currentNode.content);
+			// Sort nodes in list by content
+			commutativeNodes = sortCommutativeNodes(tree, commutativeNodes);
+			// Add nodes back to tree in content order
+			for (let i = 0; i < locationsToPutCommutativeNodes.length; i++)
+			{
+				let locationToPutCommutativeNode = locationsToPutCommutativeNodes[i];
+				if (locationsToPutCommutativeNodes.side == 'L')
+					tree[locationToPutCommutativeNode.index].leftNode = commutativeNodes[i];
+				else
+					tree[locationToPutCommutativeNode.index].rightNode = commutativeNodes[i];
+			}
+		}
+		// DFS through tree
+		currentNodeIndex = findNextInDFS(tree, rootNodeIndex, currentNodeIndex);
+	}
+	console.log("Normalised tree: ");
+	console.log(tree);
+}
+
+// Sorts nodes that are commutative under an operator by their content
+// This is so they can be moved around the tree to normalise it
+// INPUTS: tree, list of nodes
+// RETURNS: list[int] of node indices, ordered by content
+function sortCommutativeNodes(tree, nodes)
+{
+	// Implementing a bubble sort here, as lists should be very small (min 2, rarely much greater)
+	for (let i = 1; i < nodes.length; i++)
+	{
+		for (let j = 0; j < nodes.length - i; j++)
+		{
+			if (evaluateIfSwapNeeded(tree, nodes[j], nodes[j+1]))
+			{
+				let temp = nodes[j];
+				nodes[j] = nodes[j+1];
+				nodes[j+1] = temp;
 			}
 		}
 	}
-	return tree;
+	return nodes;
+}
+
+// Finds nodes in expression tree that are commutative under an operator in the expression, and their location relative to their parent
+// INPUTS: tree, int index of operator node, str type of operator (* or +)
+// RETURNS: list[int] of indices that are commutative under the operator tree[n], where n is the first currentNode,
+// 		list[obj] of locations of nodes, relative to their parent  ({index of parent, side of parent node is on}).
+function findCommutativeNodes(tree, opNodeIndex, operator)
+{
+	let opNode = tree[opNodeIndex];
+	let commutativeNodesList = [];
+	let commutativeParentsList = [];
+	let nodesToCheck = [];
+
+	let leftNodeIndex = opNode.leftNode;
+	let leftNode = tree[leftNodeIndex];
+	nodesToCheck.push(leftNode);
+
+	let rightNodeIndex = opNode.rightNode;
+	let rightNode = tree[rightNodeIndex];
+	nodesToCheck.push(rightNode);
+
+	for (node of nodesToCheck)
+	{
+		if (node.type != "operator" || node.commutative == false)
+		{
+			commutativeNodesList.push(tree.indexOf(node));
+			let parentNode = tree[node.parent];
+			commutativeParentsList.push({
+				"index": node.parent,
+				"side": parentNode.leftNode == tree.indexOf(node) ? 'L' : 'R'
+			});
+			continue;
+		}
+
+		// If commutative node of different type (* instead of +) found, normalise that subtree, then add to list
+		if (node.content != operator)
+		{
+			//normaliseTree(tree, tree.indexOf(node)); TODO: Add this back once normalisation works
+			commutativeNodesList.push(tree.indexOf(node));
+			let parentNode = tree[node.parent];
+			commutativeParentsList.push({
+				"index": node.parent,
+				"side": parentNode.leftNode == tree.indexOf(node) ? 'L' : 'R'
+			});
+			continue;
+		}
+		// If commutative node of same type found, check children
+		let leftNodeIndex = node.leftNode;
+		let leftNode = tree[leftNodeIndex];
+		nodesToCheck.push(leftNode);
+
+		let rightNodeIndex = node.rightNode;
+		let rightNode = tree[rightNodeIndex];
+		nodesToCheck.push(rightNode);
+	}
+	return {"nodes": commutativeNodesList,
+		"parents": commutativeParentsList};
+}
+
+function testFunc(treeStr)
+{
+	console.log("Hello world!");
+	let tree = strToTree(treeStr);
+	console.log(tree);
+	let commutativeNodes = findCommutativeNodes(tree, 0, '+');
+	console.log(commutativeNodes);
+	let normalisedNodesList = sortCommutativeNodes(tree, commutativeNodes);
+	console.log(commutativeNodes);
+	return;
 }
 
 // Compares 2 binary trees, and returns true if their contents are equal.
