@@ -438,11 +438,15 @@ function normaliseTree(tree, rootNodeIndex=0)
 			// Add nodes back to tree in content order
 			for (let i = 0; i < locationsToPutCommutativeNodes.length; i++)
 			{
+				// Link parent to child
 				let location = locationsToPutCommutativeNodes[i];
 				if (location.side == 'L')
 					tree[location.index].leftNode = commutativeNodes[i];
 				else
 					tree[location.index].rightNode = commutativeNodes[i];
+
+				// Link child to parent
+				tree[commutativeNodes[i]].parent = location.index;
 			}
 		}
 		// DFS through tree
