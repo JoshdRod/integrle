@@ -466,37 +466,6 @@ function sortCommutativeNodes(tree, nodes)
 	{
 		for (let j = 0; j < nodes.length - i; j++)
 		{
-			let terms = findCommutativeNodes(tree, currentNodeIndex, currentNode.content);
-			// Sort nodes in list by content
-			commutativeNodes = sortCommutativeNodes(tree, commutativeNodes);
-			// Add nodes back to tree in content order
-			for (let i = 0; i < locationsToPutCommutativeNodes.length; i++)
-			{
-				let locationToPutCommutativeNode = locationsToPutCommutativeNodes[i];
-				if (locationsToPutCommutativeNodes.side == 'L')
-					tree[locationToPutCommutativeNode.index].leftNode = commutativeNodes[i];
-				else
-					tree[locationToPutCommutativeNode.index].rightNode = commutativeNodes[i];
-			}
-		}
-		// DFS through tree
-		currentNodeIndex = findNextInDFS(tree, rootNodeIndex, currentNodeIndex);
-	}
-	console.log("Normalised tree: ");
-	console.log(tree);
-}
-
-// Sorts nodes that are commutative under an operator by their content
-// This is so they can be moved around the tree to normalise it
-// INPUTS: tree, list of nodes
-// RETURNS: list[int] of node indices, ordered by content
-function sortCommutativeNodes(tree, nodes)
-{
-	// Implementing a bubble sort here, as lists should be very small (min 2, rarely much greater)
-	for (let i = 1; i < nodes.length; i++)
-	{
-		for (let j = 0; j < nodes.length - i; j++)
-		{
 			if (evaluateIfSwapNeeded(tree, nodes[j], nodes[j+1]))
 			{
 				let temp = nodes[j];
