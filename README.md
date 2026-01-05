@@ -24,7 +24,7 @@ At Integrle HQ (my bedroom), we've been working hard to create a mathematical ex
 
 Would you like to help support the project? Thank you so much!
 
-The project is a static HTML webpage, so no experience in any js framworks is needed - just raw javascript ✨
+The project is a static HTML webpage, so no experience in any js frameworks is needed - just raw javascript ✨
 Just fork the repository, make a change, and put up a pull request!
 
 For a list of issues, check the issues tab.
