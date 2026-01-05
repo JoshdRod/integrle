@@ -395,21 +395,40 @@ function normaliseTree(tree, rootNodeIndex=0)
 			continue;
 		}
 
+		let divisionNode = currentNode;
 		// Make a (right child of *) the right child of /
-		let currentRightNode = tree.Get(currentNode.rightNode);
+		let multiplicationNode = tree.Get(divisionNode.rightNode);
 
-		// If / is root node, make * root node
-		tree.root = tree.Find(currentRightNode);
-		currentNode.rightNode = currentRightNode.rightNode;
-		let a = tree.Get(currentNode.rightNode);
-		a.parent = tree.Find(currentNode);
+		// If / is root node, we need to make * root node
+		if (tree.Find(currentNode) == tree.root)
+		{
+			tree.root = tree.Find(multiplyNode);
+		}
+
+		// If not, make * the child of /'s parent 
+		else
+		{
+			let divisionNodeParent = tree.Get(divisionNode.parent);
+			if (divisionNodeParent.leftNode == tree.Find(divisionNode))
+			{
+				divisionNodeParent.leftNode = tree.Find(multiplicationNode);
+			}
+			else if (divisionNodeParent.rightNode == tree.Find(divisionNode))
+			{
+				divisionNodeParent.rightNode = tree.Find(multiplicationNode);
+			}
+		}
+
+		divisionNode.rightNode = multiplicationNode.rightNode;
+		let a = tree.Get(divisionNode.rightNode);
+		a.parent = tree.Find(divisionNode);
 
 		// Make / the right child of *
-		currentRightNode.rightNode = tree.Find(currentNode);
-		currentNode.parent = tree.Find(currentRightNode);
+		multiplicationNode.rightNode = tree.Find(divisionNode);
+		divisionNode.parent = tree.Find(multiplicationNode);
 
 		// TODO: If / is at front of list, we need to swap the / and * around.
-		currentNodeIndex = findNextInDFS(tree, 0, tree.Find(currentNode));
+		currentNodeIndex = findNextInDFS(tree, 0, tree.Find(divisionNode));
 	}
 
 // Convert all quotients to form 1/b * a
@@ -428,7 +447,7 @@ function normaliseTree(tree, rootNodeIndex=0)
 		// Add * node
 		let multiplyNode = new Node("operator", Operator.MULTIPLICATION, leftNode=tree.Find(a), rightNode=currentNodeIndex);
 
-		// If / is at front of list, we need to swap the / and * around.
+		// If / is root node, we need to make * root node
 		if (tree.Find(currentNode) == tree.root)
 		{
 			tree.AddAsRoot(multiplyNode);
