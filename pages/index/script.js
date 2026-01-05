@@ -503,7 +503,7 @@ function normaliseTree(tree, rootNodeIndex=0)
 			b.parent = tree.indexOf(currentNode);
 		}
 
-		// If not, make * the right node if its parent
+		// If not, make * the right node of its parent
 		else
 		{
 			let multiplyNodeParent = tree[currentNode.parent];
