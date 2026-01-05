@@ -433,7 +433,8 @@ function normaliseTree(tree, rootNodeIndex=0)
 		{
 			tree.AddAsRoot(multiplyNode);
 		}
-		// If not, make * the right node if its parent
+
+		// If not, make * the right node of its parent
 		else
 		{
 			let multiplyNodeParent = tree.Get(currentNode.parent);
