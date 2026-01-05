@@ -532,10 +532,8 @@ function normaliseTree(tree, rootNodeIndex=0)
 		currentNodeIndex = findNextInDFS(tree, 0, tree.indexOf(currentNode));
 	}
 
-	// Create a dictionary of depth:node indices
-	let layers = {};
-	let maxLayer = 0;
-	for (let i = 0; i < tree.length; i++)
+	currentNode = rootNodeIndex;
+	while (currentNodeIndex != -1)
 	{
 		let currentNode = tree[currentNodeIndex];
 		// If commutative node found, add children to list
