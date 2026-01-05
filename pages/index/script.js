@@ -416,73 +416,48 @@ function normaliseTree(tree, rootNodeIndex=0)
 	currentNodeIndex = 0;
 	while (currentNodeIndex != -1)
 	{
-		let currentNode = tree[currentNodeIndex];
+		let currentNode = tree.Get(currentNodeIndex);
 		if (!checkDividendIsNot1(tree, currentNode))
 		{
 			currentNodeIndex = findNextInDFS(tree, 0, currentNodeIndex);
 			continue;
 		}
 
-		let a = tree[currentNode.rightNode];
+		let a = tree.Get(currentNode.rightNode);
 
 		// Add * node
-		let multiplyNode = {
-			content: '*',
-			type: "operator",
-			leftNode: tree.indexOf(a),
-			rightNode: currentNodeIndex,
-			parent: currentNode.parent,
-			depth: -1
-		};
-
-		tree.push(multiplyNode);
+		let multiplyNode = new Node("operator", Operator.MULTIPLICATION, leftNode=tree.Find(a), rightNode=currentNodeIndex);
 
 		// If / is at front of list, we need to swap the / and * around.
-		if (currentNodeIndex == 0)
+		if (tree.Find(currentNode) == tree.root)
 		{
-			let temp = multiplyNode;
-			tree[tree.indexOf(multiplyNode)] = currentNode;
-			tree[0] = temp;
-
-			multiplyNode.parent = -1;
-			multiplyNode.rightNode = tree.indexOf(currentNode);
-			// Fix children of /
-			let b = tree[currentNode.leftNode];
-			b.parent = tree.indexOf(currentNode);
+			tree.AddAsRoot(multiplyNode);
 		}
-
 		// If not, make * the right node if its parent
 		else
 		{
-			let multiplyNodeParent = tree[currentNode.parent];
-			multiplyNodeParent.rightNode = tree.indexOf(multiplyNode);
+			let multiplyNodeParent = tree.Get(currentNode.parent);
+			multiplyNodeParent.rightNode = -1;
+			tree.Add(multiplyNode, multiplyNodeParent);
 		}
 
-		currentNode.parent = tree.indexOf(multiplyNode);
-		a.parent = tree.indexOf(multiplyNode);
+		currentNode.parent = tree.Find(multiplyNode);
+		a.parent = tree.Find(multiplyNode);
 
 		// Add 1 node
-		let oneNode = {
-			content: '1',
-			type: "number",
-			leftNode: -1,
-			rightNode: -1,
-			parent: tree.indexOf(currentNode),
-			depth: -1
-		};
+		let oneNode = newNode("number", '1');
+		tree.Add(oneNode, currentNode);
 
-		tree.push(oneNode);
-		currentNode.rightNode = tree.indexOf(oneNode);
+		currentNode.rightNode = tree.Find(oneNode);
 
 		// Change current node index to index of * (to traverse over a)
-		currentNodeIndex = tree.indexOf(multiplyNode);
+		currentNodeIndex = tree.Find(multiplyNode);
 
-		currentNodeIndex = findNextInDFS(tree, 0, tree.indexOf(currentNode));
+		currentNodeIndex = findNextInDFS(tree, 0, tree.Find(currentNode));
 	}
 
-	// Create a dictionary of depth:node indices
 	currentNodeIndex = tree.root;
-	for (let i = 0; i < tree.length; i++)
+	while (currentNodeIndex != -1)
 	{
 		let currentNode = tree.Get(currentNodeIndex);
 		// If commutative node found, add children to list
@@ -617,11 +592,11 @@ function checkDividendIsProduct(tree, node)
 function checkDividendIsNot1(tree, node)
 {
 	// Check if node is /, and right child is not 1
-	if (node.type != "operator" || node.content != '/')
+	if (node.type != NodeType.OPERATOR || node.content != '/')
 		return false;
 
-	let currentRightNode = tree[node.rightNode];
-	if (currentRightNode.type == "number" && currentRightNode.content == '1')
+	let currentRightNode = tree.Get(node.rightNode);
+	if (currentRightNode.type == NodeType.NUMBER && currentRightNode.content == '1')
 		return false;
 
 	return true;
