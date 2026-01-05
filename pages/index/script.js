@@ -450,6 +450,17 @@ function normaliseTree(tree, rootNodeIndex=0)
 			c.parent = 0;
 		}
 
+		// If not, make * child of /s parent
+		else
+		{
+			let currentNodeParent = tree[currentNode.parent];
+			currentRightNode.parent = currentNode.parent;
+			if (currentNodeParent.leftNode == currentNodeIndex)
+				currentNodeParent.leftNode = tree.indexOf(currentRightNode);
+			else
+				currentNodeParent.rightNode = tree.indexOf(currentRightNode);
+		}
+
 		// Check quotient is in form ac/b, and needs to be transformed
 		// (Current node is /, and right child is *
 				// Make a (right child of *) the right child of /
