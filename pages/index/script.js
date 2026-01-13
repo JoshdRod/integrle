@@ -777,8 +777,7 @@ function treeToMathJax(tree, currentNodeIndex=0)
 				break;
 			}
 		default:
-			output += currentNode.content;
-			break;
+			output += currentNode.content; break;
 	}
 	return output;
 }
@@ -799,4 +798,121 @@ function cleanExpression(expression)
 	// Remove all whitespace
 	cleanExpression = cleanExpression.replaceAll(' ', '');
 	return cleanExpression;
+}
+
+
+
+class Node {
+	constructor(content, type, leftNode=-1, rightNode=-1, parent=-1) {
+		this.type = type;
+		this.content = content;
+		this.leftNode = leftNode;
+		this.rightNode = rightNode;
+		this.parent = parent;
+	}
+
+	set type(type) {
+		switch (type) {
+			case "number":
+				return NodeType.NUMBER;
+				break;
+			case "constant":
+				return NodeType.CONSTANT;
+				break;
+			case "variable":
+				return NodeType.VARIABLE;
+				break;
+			case "operator":
+				return NodeType.OPERATOR;
+				break;
+			case "function":
+				return NodeType.FUNCTION;
+				break;
+			case "open bracket":
+				return NodeType.OPEN_BRACKET;
+				break;
+			case "close bracket":
+				return NodeType.CLOSE_BRACKET;
+				break;
+			default: // Invalid type!
+				throw `Invalid type! Got ${type}, which is not in the type list.`;
+		}
+	}
+
+	set content(content) {
+		// TODO: Add some input validation here
+		switch (this.type) {
+			case NodeType.NUMBER:
+				return content;
+				break;
+			case NodeType.CONSTANT:
+				return content;
+				break;
+			case NodeType.VARIABLE:
+				return content;
+				break;
+			case NodeType.OPERATOR:
+				match (content) {
+					case '+':
+						return Operator.ADDITION;
+						break;
+					case '-':
+						return Operator.SUBTRACTION;
+						break;
+					case '*':
+						return Operator.MULTIPLICATION;
+						break;
+					case '/':
+						return Operator.DIVISION;
+						break;
+					case '^':
+						return Operator.EXPONENTIATION;
+						break;
+					default:
+						throw `Attempted to create Operator node with non-operator content. Given: ${content}`;
+						break;
+				}
+			case NodeType.FUNCTION:
+				return content;
+				break;
+			case NodeType.OPEN_BRACKET:
+				return content;
+				break;
+			case NodeType.CLOSE_BRACKET:
+				return content;
+				break;
+		}
+	}
+
+	get precedence() {
+		if (this.type != NodeType.OPERATOR) {
+			throw "Attempted to access precedence of non-operator.";
+		}
+		match (this.content) {
+			case Operator.ADDITION:
+			case Operator.MULTIPLICATION:
+				return true;
+				break;
+			default:
+				return false;
+		}
+	}
+}
+
+class Operator {
+	static #_ADDITION = '+';
+	static #_SUBTRACTION = '-';
+	static #_MULTIPLICATION = '*';
+	static #_DIVISION = '/';
+	static #_EXPONENTIATION = '^';
+}
+
+class NodeType {
+	static #_NUMBER = 0;
+	static #_CONSTANT = 1;
+	static #_VARIABLE = 2;
+	static #_OPERATOR = 3;
+	static #_FUNCTION = 4;
+	static #_OPEN_BRACKET = 5;
+	static #_CLOSE_BRACKET = 6;
 }
