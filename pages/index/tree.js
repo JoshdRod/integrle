@@ -4,7 +4,7 @@ class Operator {
 	static #_SUBTRACTION = '-';
 	static get SUBTRACTION() { return this.#_SUBTRACTION; }
 	static #_MULTIPLICATION = '*';
-	static get MULITPLICATION() { return this.#_MULTIPLICATION; }
+	static get MULTIPLICATION() { return this.#_MULTIPLICATION; }
 	static #_DIVISION = '/';
 	static get DIVISION() { return this.#_DIVISION; }
 	static #_EXPONENTIATION = '^';

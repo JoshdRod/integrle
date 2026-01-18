@@ -154,8 +154,8 @@ function expressionToComponentList(expression)
 			(
 				!(list.length == 0 ||
 				list.length > 0 &&
-					(list[list.length - 1].type == "open bracket"
-					|| list[list.length - 1].type == "function"))
+					(list[list.length - 1].type == NodeType.OPEN_BRACKET
+					|| list[list.length - 1].type == NodeType.FUNCTION))
 			)
 			{
 				list.push(new Node("operator", '+'));
@@ -265,8 +265,8 @@ function expressionToComponentList(expression)
 		// e.g (10 + x)(3 + x) -> ( 10 + x ) * ( 3 + x )
 		if (
 			list.length >= 2
-			&& ["close bracket", "number", "variable"].includes(list[list.length - 2].type)
-			&& ["open bracket", "number", "variable", "function"].includes(list[list.length - 1].type)
+			&& [NodeType.CLOSE_BRACKET, NodeType.NUMBER, NodeType.VARIABLE].includes(list[list.length - 2].type)
+			&& [NodeType.OPEN_BRACKET, NodeType.NUMBER, NodeType.VARIABLE, NodeType.FUNCTION].includes(list[list.length - 1].type)
 		)
 		{
 			list.splice(-1, 0, new Node("operator", '*'));
@@ -288,12 +288,12 @@ function componentListToPostfix(list)
 	{
 		let component = list[index];
 		// If number, constant, or variable, put in output
-		if (["number", "constant", "variable"].includes(component.type))
+		if ([NodeType.NUMBER, NodeType.CONSTANT, NodeType.VARIABLE].includes(component.type))
 		{
 			postfixList.push(component);
 		}
 		// If (, recurse and add to string
-		else if (component.type == "open bracket")
+		else if (component.type == NodeType.OPEN_BRACKET)
 		{
 			let bracketEval = componentListToPostfix(list.slice(index+1));
 			index += bracketEval.index + 1; // +1, as list indices start from 0
@@ -302,7 +302,7 @@ function componentListToPostfix(list)
 				postfixList.push(operatorStack.pop());
 		}
 		// If ), return
-		else if (component.type == "close bracket")
+		else if (component.type == NodeType.CLOSE_BRACKET)
 		{
 			postfixList.push(...operatorStack.reverse());
 			return {
@@ -311,12 +311,11 @@ function componentListToPostfix(list)
 			};
 		}
 		// If operator or function, look at stack
-		else if (component.type == "operator" || component.type == "function")
-		{
+		else if (component.type == NodeType.OPERATOR || component.type == NodeType.FUNCTION) {
 			// If function, push
 			// Functions never cause an operator to be popped. e.g: in 1 * 2 + 3, the + causes the * to be popped.
 			// In 1 * sin(3), the sin doesn't cause the * to be popped.
-			if (component.type == "function")
+			if (component.type == NodeType.FUNCTION)
 				operatorStack.push(component);
 
 			// If higher precedence than top of stack, push
