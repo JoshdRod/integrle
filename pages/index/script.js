@@ -355,22 +355,22 @@ function postfixToTree(components, index=0, parentIndex=-1, depth=0)
 
 	switch(currentComponent.type)
 	{
-		case "function":
-		case "operator": {
+		case NodeType.FUNCTION:
+		case NodeType.OPERATOR: {
 			let componentIndex = index;
 
 			currentComponent.leftNode = index+1;
 			index = postfixToTree(components, index+1, componentIndex, depth+1);
 
-			if (currentComponent.type == "operator")
+			if (currentComponent.type == NodeType.OPERATOR)
 			{
 				currentComponent.rightNode = index+1;
 				index = postfixToTree(components, index+1, componentIndex, depth+1);
 			}
 			break;
 		}
-		case "number":
-		case "constant":
+		case NodeType.NUMBER:
+		case NodeType.CONSTANT:
 			break;
 	}
 
