@@ -390,7 +390,7 @@ function normaliseTree(tree, rootNodeIndex=0)
 	{
 		let currentNode = tree[currentNodeIndex];
 		// If commutative node found, add children to list
-		if (currentNode.type == "operator" && currentNode.commutative == true)
+		if (currentNode.type == NodeType.OPERATOR && currentNode.commutative == true)
 		{
 			let terms = findCommutativeNodes(tree, currentNodeIndex, currentNode.content);
 			let commutativeNodes = terms.nodes;
@@ -461,7 +461,7 @@ function findCommutativeNodes(tree, opNodeIndex, operator)
 
 	for (const node of nodesToCheck)
 	{
-		if (node.type != "operator" || node.commutative == false)
+		if (node.type != NodeType.OPERATOR || node.commutative == false)
 		{
 			commutativeNodesList.push(tree.indexOf(node));
 			let parentNode = tree[node.parent];
