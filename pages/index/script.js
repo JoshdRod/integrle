@@ -158,21 +158,11 @@ function expressionToComponentList(expression)
 					|| list[list.length - 1].type == "function"))
 			)
 			{
-				list.push({
-					content: "+",
-					type: "operator",
-					precedence: 0,
-					commutative: true,
-					leftNode: -1,
-					rightNode: -1,
-					parent: -1,
-					depth: -1
-				});
-
+				list.push(new Node("operator", '+'));
 			}
-			content = "-1";
-			type = "number";
 
+			type = "number";
+			content = "-1";
 			i++;
 		}
 
@@ -215,8 +205,6 @@ function expressionToComponentList(expression)
 		{
 			content = exp[i];
 			type = "operator";
-			precedence = {'+': 0, '-': 0, '/': 1, '*': 1, '^': 2}[exp[i]];
-			commutative = {'+': true, '-': false, '/': false, '*': true, '^': false}[exp[i]];
 			i++;
 		}
 
@@ -266,22 +254,7 @@ function expressionToComponentList(expression)
 		}
 
 		// Add new component
-		let newComponent = {
-			content: content,
-			type: type,
-			leftNode: -1,
-			rightNode: -1,
-			parent: -1,
-			depth: -1
-		};
-
-		if (type == "operator" || type == "function") {
-			newComponent.precedence = precedence;
-			if (type == "operator") {
-				newComponent.commutative = commutative;
-			}
-		}
-		list.push(newComponent);
+		list.push(new Node(type, content));
 
 		// Check for implicit * signs
 		// If previous component is: Number, Variable, or Close Bracket
@@ -296,16 +269,7 @@ function expressionToComponentList(expression)
 			&& ["open bracket", "number", "variable", "function"].includes(list[list.length - 1].type)
 		)
 		{
-			list.splice(-1, 0, {
-				content: '*',
-				type: "operator",
-				precedence: 1,
-				leftNode: -1,
-				rightNode: -1,
-				parent: -1,
-				depth: -1,
-				commutative: true
-			});
+			list.splice(-1, 0, new Node("operator", '*'));
 		}
 			
 	}
@@ -798,121 +762,4 @@ function cleanExpression(expression)
 	// Remove all whitespace
 	cleanExpression = cleanExpression.replaceAll(' ', '');
 	return cleanExpression;
-}
-
-
-
-class Node {
-	constructor(content, type, leftNode=-1, rightNode=-1, parent=-1) {
-		this.type = type;
-		this.content = content;
-		this.leftNode = leftNode;
-		this.rightNode = rightNode;
-		this.parent = parent;
-	}
-
-	set type(type) {
-		switch (type) {
-			case "number":
-				return NodeType.NUMBER;
-				break;
-			case "constant":
-				return NodeType.CONSTANT;
-				break;
-			case "variable":
-				return NodeType.VARIABLE;
-				break;
-			case "operator":
-				return NodeType.OPERATOR;
-				break;
-			case "function":
-				return NodeType.FUNCTION;
-				break;
-			case "open bracket":
-				return NodeType.OPEN_BRACKET;
-				break;
-			case "close bracket":
-				return NodeType.CLOSE_BRACKET;
-				break;
-			default: // Invalid type!
-				throw `Invalid type! Got ${type}, which is not in the type list.`;
-		}
-	}
-
-	set content(content) {
-		// TODO: Add some input validation here
-		switch (this.type) {
-			case NodeType.NUMBER:
-				return content;
-				break;
-			case NodeType.CONSTANT:
-				return content;
-				break;
-			case NodeType.VARIABLE:
-				return content;
-				break;
-			case NodeType.OPERATOR:
-				match (content) {
-					case '+':
-						return Operator.ADDITION;
-						break;
-					case '-':
-						return Operator.SUBTRACTION;
-						break;
-					case '*':
-						return Operator.MULTIPLICATION;
-						break;
-					case '/':
-						return Operator.DIVISION;
-						break;
-					case '^':
-						return Operator.EXPONENTIATION;
-						break;
-					default:
-						throw `Attempted to create Operator node with non-operator content. Given: ${content}`;
-						break;
-				}
-			case NodeType.FUNCTION:
-				return content;
-				break;
-			case NodeType.OPEN_BRACKET:
-				return content;
-				break;
-			case NodeType.CLOSE_BRACKET:
-				return content;
-				break;
-		}
-	}
-
-	get precedence() {
-		if (this.type != NodeType.OPERATOR) {
-			throw "Attempted to access precedence of non-operator.";
-		}
-		match (this.content) {
-			case Operator.ADDITION:
-			case Operator.MULTIPLICATION:
-				return true;
-				break;
-			default:
-				return false;
-		}
-	}
-}
-
-class Operator {
-	static #_ADDITION = '+';
-	static #_SUBTRACTION = '-';
-	static #_MULTIPLICATION = '*';
-	static #_DIVISION = '/';
-	static #_EXPONENTIATION = '^';
-}
-
-class NodeType {
-	static #_NUMBER = 0;
-	static #_CONSTANT = 1;
-	static #_VARIABLE = 2;
-	static #_OPERATOR = 3;
-	static #_FUNCTION = 4;
-	static #_OPEN_BRACKET = 5;
-	static #_CLOSE_BRACKET = 6;
 }
