@@ -610,7 +610,7 @@ function treeToMathJax(tree, currentNodeIndex=0)
 	let output = "";
 	switch (currentNode.type)
 	{
-		case "operator":
+		case NodeType.OPERATOR:
 		{
 			// If children of operator are another operator, use ()s
 			let rightNodeIndex = currentNode.rightNode;
@@ -618,15 +618,15 @@ function treeToMathJax(tree, currentNodeIndex=0)
 			let leftNodeIndex = currentNode.leftNode;
 			let leftNode = tree[leftNodeIndex];
 
-			if (rightNode.type == "operator")
+			if (rightNode.type == NodeType.OPERATOR)
 			{
 				// If division, use {}s instead of ()s
 				switch (rightNode.content)
 				{
-					case '+':
+					case Operator.ADDITION:
 						output += `(${treeToMathJax(tree, rightNodeIndex)})`;
 						break;
-					case '/':
+					case Operator.DIVISION:
 						output += `{${treeToMathJax(tree, rightNodeIndex)}}`;
 						break;
 					default:
@@ -639,46 +639,46 @@ function treeToMathJax(tree, currentNodeIndex=0)
 
 			switch (currentNode.content)
 			{
-				case '/':
+				case Operator.DIVISION:
 					output += " \\over ";
 					break;
-				case '*':
+				case Operator.MULTIPLICATION:
 					// Implied * sign
 					// Due to mutiplication representing a -ive number (e.g: -4 -> -1 * 4)
-					if (rightNode.type == "number" && rightNode.content == "-1")
+					if (rightNode.type == NodeType.NUMBER && rightNode.content == "-1")
 						break;
-					if (rightNode.type == "number" ||
-						(rightNode.type == "operator" &&
-							(rightNode.content == '+' || rightNode.content == '/' || rightNode.content == '*')
+					if (rightNode.type == NodeType.NUMBER ||
+						(rightNode.type == NodeType.OPERATOR &&
+							(rightNode.content == Operator.ADDITION || rightNode.content == Operator.DIVISION || rightNode.content == Operator.MULTIPLICATION)
 						)
 					)
 					{
-						if (leftNode.type == "constant" || leftNode.type == "variable" || leftNode.type == "function" ||
-							(leftNode.type == "operator" &&
-								(leftNode.content == '+')
+						if (leftNode.type == NodeType.CONSTANT || leftNode.type == NodeType.VARIABLE || leftNode.type == NodeType.FUNCTION ||
+							(leftNode.type == NodeType.OPERATOR &&
+								(leftNode.content == Operator.ADDITION)
 							)
 						)
 						{
 							break;
 						}
 					}
-					if (rightNode.type == "variable")
+					if (rightNode.type == NodeType.VARIABLE)
 					{
-						if (leftNode.type == "function" || (leftNode.type == "operator" && leftNode.content == '+'))
+						if (leftNode.type == NodeType.FUNCTION || (leftNode.type == NodeType.OPERATOR && leftNode.content == Operator.ADDITION))
 							break;
 					}
-					if (rightNode.type == "function")
+					if (rightNode.type == NodeType.FUNCTION)
 					{
-						if (leftNode.type == "function")
+						if (leftNode.type == NodeType.FUNCTION)
 							break;
 					}
-					output += '*';
+					output += Operator.MULTIPLICATION;
 					break;
-				case '+':
+				case Operator.ADDITION:
 					// If addition is actually representing a subtraction, ignore + sign (e.g: 1-2 -> 1+(-1*2))
-					if (leftNode.type == "operator" && leftNode.content == '*')
+					if (leftNode.type == NodeType.OPERATOR && leftNode.content == Operator.MULTIPLICATION)
 					{
-						if (tree[leftNode.rightNode].type == "number" && tree[leftNode.rightNode].content == '-1')
+						if (tree[leftNode.rightNode].type == NodeType.NUMBER && tree[leftNode.rightNode].content == '-1')
 							break;
 					}
 					else
@@ -691,15 +691,15 @@ function treeToMathJax(tree, currentNodeIndex=0)
 					break;
 			}
 
-			if (leftNode.type == "operator")
+			if (leftNode.type == NodeType.OPERATOR)
 			{
 				// If division, use {}s instead of ()s
 				switch (leftNode.content)
 				{
-					case '+':
+					case Operator.ADDITION:
 						output += `(${treeToMathJax(tree, leftNodeIndex)})`;
 						break;
-					case '/':
+					case Operator.DIVISION:
 						output += `{${treeToMathJax(tree, leftNodeIndex)}}`;
 						break;
 					default:
@@ -712,16 +712,16 @@ function treeToMathJax(tree, currentNodeIndex=0)
 
 			break;
 		}
-		case "function":
+		case NodeType.FUNCTION:
 			output += `\\${currentNode.content}`;
 			let leftNodeIndex = currentNode.leftNode;
 			let leftNode = tree[leftNodeIndex];
-			if (leftNode.type == "operator")
+			if (leftNode.type == NodeType.OPERATOR)
 			{
 				// If division, use {}s instead of ()s
 				switch (leftNode.content)
 				{
-					case '/':
+					case Operator.DIVISION:
 						output += `{${treeToMathJax(tree, leftNodeIndex)}}`;
 						break;
 					default:
@@ -733,7 +733,7 @@ function treeToMathJax(tree, currentNodeIndex=0)
 				output += `({${treeToMathJax(tree, leftNodeIndex)}})`;
 
 			break;
-		case "number":
+		case NodeType.NUMBER:
 			if (currentNode.content == "-1")
 			{
 				output += '-';

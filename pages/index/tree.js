@@ -119,8 +119,11 @@ class Node {
 	}
 
 	get precedence() {
-		if (this.type != NodeType.OPERATOR) {
-			throw "Attempted to access precedence of non-operator.";
+		if (this.type != NodeType.OPERATOR && this.type != NodeType.FUNCTION) {
+			throw "Attempted to access precedence of non-operator or function.";
+		}
+		if (this.type == NodeType.FUNCTION) {
+			return 0.5; // TODO: Maybe we change this so they're all ints?
 		}
 		switch (this.content) {
 			case Operator.ADDITION:
