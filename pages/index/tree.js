@@ -207,7 +207,18 @@ class Tree {
 	// INUPTS: Node to add, parent node to add under
 	// RETURNS: none.
 	function Add(node, parent) {
-		// TODO: Add functionality
+		if (parent.leftNode == -1) {
+			parent.leftNode = this.body.length;
+		}
+		else if (parent.rightNode == -1) {
+			parent.rightNode = this.body.length;
+		}
+		else {
+			throw `Attempted to add node to binary tree as child to node with two children: \n\n${node} \n\nto \n\n${parent}`;
+		}
+		node.parent = this.body.indexOf(parent);
+		this.body.append(node);
+		return;
 	}
 
 	// Remove a specified node from the graph.
