@@ -152,3 +152,68 @@ class Node {
 		}
 	}
 }
+
+class Tree {
+	constructor () {
+		// TODO: Not sure what to put here
+	}
+
+	//
+	/* -- DATA  -- */
+	//
+
+	// body = The list of Node objects that form the tree
+	#_body = [];
+	get body() {
+		return this.#_body;
+	}
+	set body(content) {
+		// If content is an array of Node objects, then allow the set
+		// Array test
+		if (!Array.isArray(content)) {
+			throw `Tried to set body of tree to non-array: ${content}`;
+		}
+
+		// Node objects test
+		for (const element of content) {
+			if (!(element instanceof Node)) {
+				throw `Tried to set body of tree to array contaning non-node elements: ${content}`;
+			}
+		}
+
+		this.#_body = content;
+		return;
+	}
+
+	// root = A pointer to the root node of the tree
+	#_root;
+	get root() {
+		return this.#_root;
+	}
+	set root(value) {
+		if (!Number.isInteger(root)) {
+			throw `Tried to set root node pointer to non-integer value: ${value}`;
+		}
+
+		this.#_root = value;
+		return;
+	}
+
+	//
+	/* -- FUNCTIONALITY -- */
+	//
+
+	// Add a node to the graph, below its parent. The default behaviour is to place the node to the left of the parent, if possible.
+	// INUPTS: Node to add, parent node to add under
+	// RETURNS: none.
+	function Add(node, parent) {
+		// TODO: Add functionality
+	}
+
+	// Remove a specified node from the graph.
+	// INPUTS: Node to remove
+	// RETURNS: none.
+	function Remove(node) {
+		// TODO: Add functionality
+	}
+}
