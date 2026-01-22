@@ -225,6 +225,39 @@ class Tree {
 	// INPUTS: Node to remove
 	// RETURNS: none.
 	function Remove(node) {
-		// TODO: Add functionality
+		let nodeIndex = this.body.indexOf(node);
+
+		// Do not allow removal of non-leaf nodes (else tree splits into three!)
+		if (node.leftNode != -1 || node.rightNode != -1) {
+			throw `Tried to remove non-leaf node from tree! Node ${node} \n from tree ${this.body}`;
+		}
+		// Find parent node
+		// Remove node from parent node's children
+		let parentNode = this.body[node.parentNode];
+		if (parentNode.leftNode == nodeIndex) {
+			parentNode.leftNode == -1;
+		}
+		else if (parentNode.rightNode == nodeIndex) {
+			parentNode.rightNode == -1;
+		}
+		else {
+			throw `Attempted to remove node that has no reference in its parent:\nNode (index ${nodeIndex}): ${node}\nParent: ${parentNode)}`;
+		}
+
+		// Subtract 1 from all parent/child pointers > node's position in body
+		for (const treeNode of this.body) {
+			if (treeNode.leftNode > nodeIndex) {
+				treeNode.leftNode -= 1;
+			}
+			if (treeNode.rightNode > nodeIndex) {
+				treeNode.rightNode -= 1;
+			}
+			if (treeNode.parent > nodeIndex) {
+				treeNode.parent -= 1;;
+			}
+		}
+
+		// Delete node from body
+		this.body.splice(nodeIndex, 1);
 	}
 }
