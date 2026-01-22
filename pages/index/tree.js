@@ -154,8 +154,8 @@ class Node {
 }
 
 class Tree {
-	constructor () {
-		// TODO: Not sure what to put here
+	constructor (body=[]) {
+		this.body = body;
 	}
 
 	//
