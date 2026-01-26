@@ -154,8 +154,9 @@ class Node {
 }
 
 class Tree {
-	constructor (body=[]) {
+	constructor (body=[], root=0) {
 		this.body = body;
+		this.root = root;
 	}
 
 	//
@@ -191,8 +192,11 @@ class Tree {
 		return this.#_root;
 	}
 	set root(value) {
-		if (!Number.isInteger(root)) {
+		if (!Number.isInteger(value)) {
 			throw `Tried to set root node pointer to non-integer value: ${value}`;
+		}
+		if (value > this.body.length - 1) {
+			throw `Tried to set root node pointer to value out of range: ${value}`;
 		}
 
 		this.#_root = value;
@@ -206,7 +210,7 @@ class Tree {
 	// Add a node to the graph, below its parent. The default behaviour is to place the node to the left of the parent, if possible.
 	// INUPTS: Node to add, parent node to add under
 	// RETURNS: none.
-	function Add(node, parent) {
+	Add(node, parent) {
 		if (parent.leftNode == -1) {
 			parent.leftNode = this.body.length;
 		}
@@ -217,14 +221,14 @@ class Tree {
 			throw `Attempted to add node to binary tree as child to node with two children: \n\n${node} \n\nto \n\n${parent}`;
 		}
 		node.parent = this.body.indexOf(parent);
-		this.body.append(node);
+		this.#_body.push(node);
 		return;
 	}
 
 	// Remove a specified node from the graph.
 	// INPUTS: Node to remove
 	// RETURNS: none.
-	function Remove(node) {
+	Remove(node) {
 		let nodeIndex = this.body.indexOf(node);
 
 		// Do not allow removal of non-leaf nodes (else tree splits into three!)
@@ -233,15 +237,15 @@ class Tree {
 		}
 		// Find parent node
 		// Remove node from parent node's children
-		let parentNode = this.body[node.parentNode];
+		let parentNode = this.body[node.parent];
 		if (parentNode.leftNode == nodeIndex) {
-			parentNode.leftNode == -1;
+			parentNode.leftNode = -1;
 		}
 		else if (parentNode.rightNode == nodeIndex) {
-			parentNode.rightNode == -1;
+			parentNode.rightNode = -1;
 		}
 		else {
-			throw `Attempted to remove node that has no reference in its parent:\nNode (index ${nodeIndex}): ${node}\nParent: ${parentNode)}`;
+			throw `Attempted to remove node that has no reference in its parent:\nNode (index ${nodeIndex}): ${node}\nParent: ${parentNode}`;
 		}
 
 		// Subtract 1 from all parent/child pointers > node's position in body
