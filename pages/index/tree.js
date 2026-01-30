@@ -104,7 +104,6 @@ class Node {
 						break;
 					default:
 						throw `Attempted to create Operator node with non-operator content. Given: ${content}`;
-						break;
 				}
 				break;
 			case NodeType.FUNCTION:
