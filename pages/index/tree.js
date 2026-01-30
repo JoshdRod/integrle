@@ -106,6 +106,7 @@ class Node {
 						throw `Attempted to create Operator node with non-operator content. Given: ${content}`;
 						break;
 				}
+				break;
 			case NodeType.FUNCTION:
 				this.#_content = content;
 				break;
