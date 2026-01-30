@@ -377,7 +377,7 @@ function postfixToTree(components, index=0, parentIndex=-1, depth=0)
 	if (depth > 0)
 		return index;
 	else
-		return components;
+		return new Tree(components);
 }
 
 // As there are multiple ways to write the same maths expression, there are multiple graphs that map to equivalent expressions. To compare equality of 2 graphs, they must first both be normalised (essentially, sorting elements under commutative operators by their content)
