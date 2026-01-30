@@ -203,6 +203,12 @@ class Tree {
 		return;
 	}
 
+	// length = length of body
+	#_length;
+	get length() {
+		return this.body.length;
+	}
+
 	//
 	/* -- FUNCTIONALITY -- */
 	//
@@ -217,6 +223,16 @@ class Tree {
 			throw `Index of out range: tree has length ${this.body.length}, index addressed: ${index}`;
 
 		return this.body[index];
+	}
+
+	// Finds a node in the tree, and returns its index
+	// INPUT: Node
+	// RETURNS: int index of node in tree
+	Find(node) {
+		if (!(node instanceof Node))
+			throw `Attempted to find inddex of non-node: ${node}`;
+
+		return this.body.indexOf(node);
 	}
 
 	// Add a node to the graph, below its parent. The default behaviour is to place the node to the left of the parent, if possible.
