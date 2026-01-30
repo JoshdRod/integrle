@@ -129,14 +129,11 @@ class Node {
 			case Operator.ADDITION:
 			case Operator.SUBTRACTION:
 				return 0;
-				break;
 			case Operator.MULTIPLICATION:
 			case Operator.DIVISION:
 				return 1;
-				break;
 			case Operator.EXPONENTIATION:
 				return 2;
-				break;
 			default:
 				throw `Node of operator type has content ${this.content}, which should not be possible.`;
 		}
@@ -150,7 +147,6 @@ class Node {
 			case Operator.ADDITION:
 			case Operator.MULTIPLICATION:
 				return true;
-				break;
 			default:
 				return false;
 		}
