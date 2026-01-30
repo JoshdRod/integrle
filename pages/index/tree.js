@@ -207,6 +207,18 @@ class Tree {
 	/* -- FUNCTIONALITY -- */
 	//
 
+	// Get a node from the tree
+	// INPUTS: int index
+	// RETURNS: node at that index (if exists)
+	Get(index) {
+		if (typeof(index) != "number")
+			throw `Index for Get is NaN: ${index}`;
+		if (index >= this.body.length)
+			throw `Index of out range: tree has length ${this.body.length}, index addressed: ${index}`;
+
+		return this.body[index];
+	}
+
 	// Add a node to the graph, below its parent. The default behaviour is to place the node to the left of the parent, if possible.
 	// INUPTS: Node to add, parent node to add under
 	// RETURNS: none.
