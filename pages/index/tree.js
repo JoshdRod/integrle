@@ -239,6 +239,9 @@ class Tree {
 	// INUPTS: Node to add, parent node to add under
 	// RETURNS: none.
 	Add(node, parent) {
+		if (this.Find(parent) == -1) {
+			throw new Error(`Attempted to add child to node not in tree:\n\n Parent:\n\n ${parent}`);
+		}
 		if (parent.leftNode == -1) {
 			parent.leftNode = this.body.length;
 		}
@@ -257,7 +260,10 @@ class Tree {
 	// INPUTS: Node to remove
 	// RETURNS: none.
 	Remove(node) {
-		let nodeIndex = this.body.indexOf(node);
+		let nodeIndex = this.Find(node);
+		if (nodeIndex == -1) {
+			throw new Error(`Attempted to remove node that is not in tree:\n\n\ Node: \n\n${node} \n\n Tree: \n\n${this.body}`);
+		}
 
 		// Do not allow removal of non-leaf nodes (else tree splits into three!)
 		if (node.leftNode != -1 || node.rightNode != -1) {
