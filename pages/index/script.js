@@ -740,7 +740,8 @@ function treeToMathJax(tree, currentNodeIndex=0)
 				break;
 			}
 		default:
-			output += currentNode.content; break;
+			output += currentNode.content;
+			break;
 	}
 	return output;
 }
