@@ -154,25 +154,15 @@ function expressionToComponentList(expression)
 			(
 				!(list.length == 0 ||
 				list.length > 0 &&
-					(list[list.length - 1].type == "open bracket"
-					|| list[list.length - 1].type == "function"))
+					(list[list.length - 1].type == NodeType.OPEN_BRACKET
+					|| list[list.length - 1].type == NodeType.FUNCTION))
 			)
 			{
-				list.push({
-					content: "+",
-					type: "operator",
-					precedence: 0,
-					commutative: true,
-					leftNode: -1,
-					rightNode: -1,
-					parent: -1,
-					depth: -1
-				});
-
+				list.push(new Node("operator", '+'));
 			}
-			content = "-1";
-			type = "number";
 
+			type = "number";
+			content = "-1";
 			i++;
 		}
 
@@ -215,8 +205,6 @@ function expressionToComponentList(expression)
 		{
 			content = exp[i];
 			type = "operator";
-			precedence = {'+': 0, '-': 0, '/': 1, '*': 1, '^': 2}[exp[i]];
-			commutative = {'+': true, '-': false, '/': false, '*': true, '^': false}[exp[i]];
 			i++;
 		}
 
@@ -266,22 +254,7 @@ function expressionToComponentList(expression)
 		}
 
 		// Add new component
-		let newComponent = {
-			content: content,
-			type: type,
-			leftNode: -1,
-			rightNode: -1,
-			parent: -1,
-			depth: -1
-		};
-
-		if (type == "operator" || type == "function") {
-			newComponent.precedence = precedence;
-			if (type == "operator") {
-				newComponent.commutative = commutative;
-			}
-		}
-		list.push(newComponent);
+		list.push(new Node(type, content));
 
 		// Check for implicit * signs
 		// If previous component is: Number, Variable, or Close Bracket
@@ -292,20 +265,11 @@ function expressionToComponentList(expression)
 		// e.g (10 + x)(3 + x) -> ( 10 + x ) * ( 3 + x )
 		if (
 			list.length >= 2
-			&& ["close bracket", "number", "variable"].includes(list[list.length - 2].type)
-			&& ["open bracket", "number", "variable", "function"].includes(list[list.length - 1].type)
+			&& [NodeType.CLOSE_BRACKET, NodeType.NUMBER, NodeType.VARIABLE].includes(list[list.length - 2].type)
+			&& [NodeType.OPEN_BRACKET, NodeType.NUMBER, NodeType.VARIABLE, NodeType.FUNCTION].includes(list[list.length - 1].type)
 		)
 		{
-			list.splice(-1, 0, {
-				content: '*',
-				type: "operator",
-				precedence: 1,
-				leftNode: -1,
-				rightNode: -1,
-				parent: -1,
-				depth: -1,
-				commutative: true
-			});
+			list.splice(-1, 0, new Node("operator", '*'));
 		}
 			
 	}
@@ -324,12 +288,12 @@ function componentListToPostfix(list)
 	{
 		let component = list[index];
 		// If number, constant, or variable, put in output
-		if (["number", "constant", "variable"].includes(component.type))
+		if ([NodeType.NUMBER, NodeType.CONSTANT, NodeType.VARIABLE].includes(component.type))
 		{
 			postfixList.push(component);
 		}
 		// If (, recurse and add to string
-		else if (component.type == "open bracket")
+		else if (component.type == NodeType.OPEN_BRACKET)
 		{
 			let bracketEval = componentListToPostfix(list.slice(index+1));
 			index += bracketEval.index + 1; // +1, as list indices start from 0
@@ -338,7 +302,7 @@ function componentListToPostfix(list)
 				postfixList.push(operatorStack.pop());
 		}
 		// If ), return
-		else if (component.type == "close bracket")
+		else if (component.type == NodeType.CLOSE_BRACKET)
 		{
 			postfixList.push(...operatorStack.reverse());
 			return {
@@ -347,12 +311,11 @@ function componentListToPostfix(list)
 			};
 		}
 		// If operator or function, look at stack
-		else if (component.type == "operator" || component.type == "function")
-		{
+		else if (component.type == NodeType.OPERATOR || component.type == NodeType.FUNCTION) {
 			// If function, push
 			// Functions never cause an operator to be popped. e.g: in 1 * 2 + 3, the + causes the * to be popped.
 			// In 1 * sin(3), the sin doesn't cause the * to be popped.
-			if (component.type == "function")
+			if (component.type == NodeType.FUNCTION)
 				operatorStack.push(component);
 
 			// If higher precedence than top of stack, push
@@ -392,22 +355,22 @@ function postfixToTree(components, index=0, parentIndex=-1, depth=0)
 
 	switch(currentComponent.type)
 	{
-		case "function":
-		case "operator": {
+		case NodeType.FUNCTION:
+		case NodeType.OPERATOR: {
 			let componentIndex = index;
 
 			currentComponent.leftNode = index+1;
 			index = postfixToTree(components, index+1, componentIndex, depth+1);
 
-			if (currentComponent.type == "operator")
+			if (currentComponent.type == NodeType.OPERATOR)
 			{
 				currentComponent.rightNode = index+1;
 				index = postfixToTree(components, index+1, componentIndex, depth+1);
 			}
 			break;
 		}
-		case "number":
-		case "constant":
+		case NodeType.NUMBER:
+		case NodeType.CONSTANT:
 			break;
 	}
 
@@ -427,7 +390,7 @@ function normaliseTree(tree, rootNodeIndex=0)
 	{
 		let currentNode = tree[currentNodeIndex];
 		// If commutative node found, add children to list
-		if (currentNode.type == "operator" && currentNode.commutative == true)
+		if (currentNode.type == NodeType.OPERATOR && currentNode.commutative == true)
 		{
 			let terms = findCommutativeNodes(tree, currentNodeIndex, currentNode.content);
 			let commutativeNodes = terms.nodes;
@@ -498,7 +461,7 @@ function findCommutativeNodes(tree, opNodeIndex, operator)
 
 	for (const node of nodesToCheck)
 	{
-		if (node.type != "operator" || node.commutative == false)
+		if (node.type != NodeType.OPERATOR || node.commutative == false)
 		{
 			commutativeNodesList.push(tree.indexOf(node));
 			let parentNode = tree[node.parent];
@@ -647,7 +610,7 @@ function treeToMathJax(tree, currentNodeIndex=0)
 	let output = "";
 	switch (currentNode.type)
 	{
-		case "operator":
+		case NodeType.OPERATOR:
 		{
 			// If children of operator are another operator, use ()s
 			let rightNodeIndex = currentNode.rightNode;
@@ -655,15 +618,15 @@ function treeToMathJax(tree, currentNodeIndex=0)
 			let leftNodeIndex = currentNode.leftNode;
 			let leftNode = tree[leftNodeIndex];
 
-			if (rightNode.type == "operator")
+			if (rightNode.type == NodeType.OPERATOR)
 			{
 				// If division, use {}s instead of ()s
 				switch (rightNode.content)
 				{
-					case '+':
+					case Operator.ADDITION:
 						output += `(${treeToMathJax(tree, rightNodeIndex)})`;
 						break;
-					case '/':
+					case Operator.DIVISION:
 						output += `{${treeToMathJax(tree, rightNodeIndex)}}`;
 						break;
 					default:
@@ -676,46 +639,46 @@ function treeToMathJax(tree, currentNodeIndex=0)
 
 			switch (currentNode.content)
 			{
-				case '/':
+				case Operator.DIVISION:
 					output += " \\over ";
 					break;
-				case '*':
+				case Operator.MULTIPLICATION:
 					// Implied * sign
 					// Due to mutiplication representing a -ive number (e.g: -4 -> -1 * 4)
-					if (rightNode.type == "number" && rightNode.content == "-1")
+					if (rightNode.type == NodeType.NUMBER && rightNode.content == "-1")
 						break;
-					if (rightNode.type == "number" ||
-						(rightNode.type == "operator" &&
-							(rightNode.content == '+' || rightNode.content == '/' || rightNode.content == '*')
+					if (rightNode.type == NodeType.NUMBER ||
+						(rightNode.type == NodeType.OPERATOR &&
+							(rightNode.content == Operator.ADDITION || rightNode.content == Operator.DIVISION || rightNode.content == Operator.MULTIPLICATION)
 						)
 					)
 					{
-						if (leftNode.type == "constant" || leftNode.type == "variable" || leftNode.type == "function" ||
-							(leftNode.type == "operator" &&
-								(leftNode.content == '+')
+						if (leftNode.type == NodeType.CONSTANT || leftNode.type == NodeType.VARIABLE || leftNode.type == NodeType.FUNCTION ||
+							(leftNode.type == NodeType.OPERATOR &&
+								(leftNode.content == Operator.ADDITION)
 							)
 						)
 						{
 							break;
 						}
 					}
-					if (rightNode.type == "variable")
+					if (rightNode.type == NodeType.VARIABLE)
 					{
-						if (leftNode.type == "function" || (leftNode.type == "operator" && leftNode.content == '+'))
+						if (leftNode.type == NodeType.FUNCTION || (leftNode.type == NodeType.OPERATOR && leftNode.content == Operator.ADDITION))
 							break;
 					}
-					if (rightNode.type == "function")
+					if (rightNode.type == NodeType.FUNCTION)
 					{
-						if (leftNode.type == "function")
+						if (leftNode.type == NodeType.FUNCTION)
 							break;
 					}
-					output += '*';
+					output += Operator.MULTIPLICATION;
 					break;
-				case '+':
+				case Operator.ADDITION:
 					// If addition is actually representing a subtraction, ignore + sign (e.g: 1-2 -> 1+(-1*2))
-					if (leftNode.type == "operator" && leftNode.content == '*')
+					if (leftNode.type == NodeType.OPERATOR && leftNode.content == Operator.MULTIPLICATION)
 					{
-						if (tree[leftNode.rightNode].type == "number" && tree[leftNode.rightNode].content == '-1')
+						if (tree[leftNode.rightNode].type == NodeType.NUMBER && tree[leftNode.rightNode].content == '-1')
 							break;
 					}
 					else
@@ -728,15 +691,15 @@ function treeToMathJax(tree, currentNodeIndex=0)
 					break;
 			}
 
-			if (leftNode.type == "operator")
+			if (leftNode.type == NodeType.OPERATOR)
 			{
 				// If division, use {}s instead of ()s
 				switch (leftNode.content)
 				{
-					case '+':
+					case Operator.ADDITION:
 						output += `(${treeToMathJax(tree, leftNodeIndex)})`;
 						break;
-					case '/':
+					case Operator.DIVISION:
 						output += `{${treeToMathJax(tree, leftNodeIndex)}}`;
 						break;
 					default:
@@ -749,16 +712,16 @@ function treeToMathJax(tree, currentNodeIndex=0)
 
 			break;
 		}
-		case "function":
+		case NodeType.FUNCTION:
 			output += `\\${currentNode.content}`;
 			let leftNodeIndex = currentNode.leftNode;
 			let leftNode = tree[leftNodeIndex];
-			if (leftNode.type == "operator")
+			if (leftNode.type == NodeType.OPERATOR)
 			{
 				// If division, use {}s instead of ()s
 				switch (leftNode.content)
 				{
-					case '/':
+					case Operator.DIVISION:
 						output += `{${treeToMathJax(tree, leftNodeIndex)}}`;
 						break;
 					default:
@@ -770,7 +733,7 @@ function treeToMathJax(tree, currentNodeIndex=0)
 				output += `({${treeToMathJax(tree, leftNodeIndex)}})`;
 
 			break;
-		case "number":
+		case NodeType.NUMBER:
 			if (currentNode.content == "-1")
 			{
 				output += '-';
