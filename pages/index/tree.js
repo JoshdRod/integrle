@@ -65,7 +65,7 @@ class Node {
 				this.#_type = NodeType.CLOSE_BRACKET;
 				break;
 			default: // Invalid type!
-				throw `Invalid type! Got ${type}, which is not in the type list.`;
+				throw new Errror(`Invalid type! Got ${type}, which is not in the type list.`);
 		}
 	}
 
@@ -120,7 +120,7 @@ class Node {
 
 	get precedence() {
 		if (this.type != NodeType.OPERATOR && this.type != NodeType.FUNCTION) {
-			throw "Attempted to access precedence of non-operator or function.";
+			throw new Error("Attempted to access precedence of non-operator or function.");
 		}
 		if (this.type == NodeType.FUNCTION) {
 			return 0.5; // TODO: Maybe we change this so they're all ints?
@@ -135,13 +135,13 @@ class Node {
 			case Operator.EXPONENTIATION:
 				return 2;
 			default:
-				throw `Node of operator type has content ${this.content}, which should not be possible.`;
+				throw new Error(`Node of operator type has content ${this.content}, which should not be possible.`);
 		}
 	}
 
 	get commutative() {
 		if (this.type != NodeType.OPERATOR) {
-			throw "Attempted to query commutativity of non-operator.";
+			throw new Error("Attempted to query commutativity of non-operator.");
 		}
 		switch (this.content) {
 			case Operator.ADDITION:
