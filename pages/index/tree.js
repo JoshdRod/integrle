@@ -294,6 +294,10 @@ class Tree {
 				treeNode.parent -= 1;
 			}
 		}
+		// Subract 1 from root if affected
+		if (this.root > nodeIndex) {
+			this.root -= 1;
+		}
 
 		// Delete node from body
 		this.body.splice(nodeIndex, 1);
