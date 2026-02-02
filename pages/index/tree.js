@@ -65,7 +65,7 @@ class Node {
 				this.#_type = NodeType.CLOSE_BRACKET;
 				break;
 			default: // Invalid type!
-				throw new Errror(`Invalid type! Got ${type}, which is not in the type list.`);
+				throw new Error(`Invalid type! Got ${type}, which is not in the type list.`);
 		}
 	}
 
@@ -103,7 +103,7 @@ class Node {
 						this.#_content = Operator.EXPONENTIATION;
 						break;
 					default:
-						throw `Attempted to create Operator node with non-operator content. Given: ${content}`;
+						throw new Error(`Attempted to create Operator node with non-operator content. Given: ${content}`);
 				}
 				break;
 			case NodeType.FUNCTION:
@@ -172,13 +172,13 @@ class Tree {
 		// If content is an array of Node objects, then allow the set
 		// Array test
 		if (!Array.isArray(content)) {
-			throw `Tried to set body of tree to non-array: ${content}`;
+			throw new Error(`Tried to set body of tree to non-array: ${content}`);
 		}
 
 		// Node objects test
 		for (const element of content) {
 			if (!(element instanceof Node)) {
-				throw `Tried to set body of tree to array contaning non-node elements: ${content}`;
+				throw new Error(`Tried to set body of tree to array contaning non-node elements: ${content}`);
 			}
 		}
 
@@ -193,10 +193,10 @@ class Tree {
 	}
 	set root(value) {
 		if (!Number.isInteger(value)) {
-			throw `Tried to set root node pointer to non-integer value: ${value}`;
+			throw new Error(`Tried to set root node pointer to non-integer value: ${value}`);
 		}
 		if (value > this.body.length - 1) {
-			throw `Tried to set root node pointer to value out of range: ${value}`;
+			throw new Error(`Tried to set root node pointer to value out of range: ${value}`);
 		}
 
 		this.#_root = value;
@@ -218,9 +218,9 @@ class Tree {
 	// RETURNS: node at that index (if exists)
 	Get(index) {
 		if (typeof(index) != "number")
-			throw `Index for Get is NaN: ${index}`;
+			throw new Error(`Index for Get is NaN: ${index}`);
 		if (index >= this.body.length)
-			throw `Index of out range: tree has length ${this.body.length}, index addressed: ${index}`;
+			throw new Error(`Index of out range: tree has length ${this.body.length}, index addressed: ${index}`);
 
 		return this.body[index];
 	}
@@ -230,7 +230,7 @@ class Tree {
 	// RETURNS: int index of node in tree
 	Find(node) {
 		if (!(node instanceof Node))
-			throw `Attempted to find inddex of non-node: ${node}`;
+			throw new Error(`Attempted to find inddex of non-node: ${node}`);
 
 		return this.body.indexOf(node);
 	}
@@ -249,7 +249,7 @@ class Tree {
 			parent.rightNode = this.body.length;
 		}
 		else {
-			throw `Attempted to add node to binary tree as child to node with two children: \n\n${node} \n\nto \n\n${parent}`;
+			throw new Error(`Attempted to add node to binary tree as child to node with two children: \n\n${node} \n\nto \n\n${parent}`);
 		}
 		node.parent = this.body.indexOf(parent);
 		this.#_body.push(node);
@@ -267,7 +267,7 @@ class Tree {
 
 		// Do not allow removal of non-leaf nodes (else tree splits into three!)
 		if (node.leftNode != -1 || node.rightNode != -1) {
-			throw `Tried to remove non-leaf node from tree! Node ${node} \n from tree ${this.body}`;
+			throw new Error(`Tried to remove non-leaf node from tree! Node ${node} \n from tree ${this.body}`);
 		}
 		// Find parent node
 		// Remove node from parent node's children
@@ -279,7 +279,7 @@ class Tree {
 			parentNode.rightNode = -1;
 		}
 		else {
-			throw `Attempted to remove node that has no reference in its parent:\nNode (index ${nodeIndex}): ${node}\nParent: ${parentNode}`;
+			throw new Error(`Attempted to remove node that has no reference in its parent:\nNode (index ${nodeIndex}): ${node}\nParent: ${parentNode}`);
 		}
 
 		// Subtract 1 from all parent/child pointers > node's position in body
