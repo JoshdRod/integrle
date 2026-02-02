@@ -140,8 +140,6 @@ function expressionToComponentList(expression)
 	let list = [];
 	let content = "";
 	let type = "";
-	let precedence = "";
-	let commutative = true;
 	let i = 0;
 	while (i < exp.length)
 	{
@@ -249,7 +247,6 @@ function expressionToComponentList(expression)
 			else
 			{
 				type = "function";
-				precedence = 0.5;
 			}
 		}
 
