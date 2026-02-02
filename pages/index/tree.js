@@ -291,7 +291,7 @@ class Tree {
 				treeNode.rightNode -= 1;
 			}
 			if (treeNode.parent > nodeIndex) {
-				treeNode.parent -= 1;;
+				treeNode.parent -= 1;
 			}
 		}
 
