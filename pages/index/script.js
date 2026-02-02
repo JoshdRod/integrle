@@ -140,8 +140,6 @@ function expressionToComponentList(expression)
 	let list = [];
 	let content = "";
 	let type = "";
-	let precedence = "";
-	let commutative = true;
 	let i = 0;
 	while (i < exp.length)
 	{
@@ -249,7 +247,6 @@ function expressionToComponentList(expression)
 			else
 			{
 				type = "function";
-				precedence = 0.5;
 			}
 		}
 
@@ -377,7 +374,7 @@ function postfixToTree(components, index=0, parentIndex=-1, depth=0)
 	if (depth > 0)
 		return index;
 	else
-		return components;
+		return new Tree(components);
 }
 
 // As there are multiple ways to write the same maths expression, there are multiple graphs that map to equivalent expressions. To compare equality of 2 graphs, they must first both be normalised (essentially, sorting elements under commutative operators by their content)
@@ -388,7 +385,7 @@ function normaliseTree(tree, rootNodeIndex=0)
 	let currentNodeIndex = rootNodeIndex;
 	while (currentNodeIndex != -1)
 	{
-		let currentNode = tree[currentNodeIndex];
+		let currentNode = tree.Get(currentNodeIndex);
 		// If commutative node found, add children to list
 		if (currentNode.type == NodeType.OPERATOR && currentNode.commutative == true)
 		{
@@ -404,12 +401,12 @@ function normaliseTree(tree, rootNodeIndex=0)
 				// Link parent to child
 				let location = locationsToPutCommutativeNodes[i];
 				if (location.side == 'L')
-					tree[location.index].leftNode = commutativeNodes[i];
+					tree.Get(location.index).leftNode = commutativeNodes[i];
 				else
-					tree[location.index].rightNode = commutativeNodes[i];
+					tree.Get(location.index).rightNode = commutativeNodes[i];
 
 				// Link child to parent
-				tree[commutativeNodes[i]].parent = location.index;
+				tree.Get(commutativeNodes[i]).parent = location.index;
 			}
 		}
 		// DFS through tree
@@ -442,32 +439,32 @@ function sortCommutativeNodes(tree, nodes)
 
 // Finds nodes in expression tree that are commutative under an operator in the expression, and their location relative to their parent
 // INPUTS: tree, int index of operator node, str type of operator (* or +)
-// RETURNS: list[int] of indices that are commutative under the operator tree[n], where n is the first currentNode,
+// RETURNS: list[int] of indices that are commutative under the operator tree.Get(n), where n is the first currentNode,
 // 		list[obj] of locations of nodes, relative to their parent  ({index of parent, side of parent node is on}).
 function findCommutativeNodes(tree, opNodeIndex, operator)
 {
-	let opNode = tree[opNodeIndex];
+	let opNode = tree.Get(opNodeIndex);
 	let commutativeNodesList = [];
 	let commutativeParentsList = [];
 	let nodesToCheck = [];
 
 	let leftNodeIndex = opNode.leftNode;
-	let leftNode = tree[leftNodeIndex];
+	let leftNode = tree.Get(leftNodeIndex);
 	nodesToCheck.push(leftNode);
 
 	let rightNodeIndex = opNode.rightNode;
-	let rightNode = tree[rightNodeIndex];
+	let rightNode = tree.Get(rightNodeIndex);
 	nodesToCheck.push(rightNode);
 
 	for (const node of nodesToCheck)
 	{
 		if (node.type != NodeType.OPERATOR || node.commutative == false)
 		{
-			commutativeNodesList.push(tree.indexOf(node));
-			let parentNode = tree[node.parent];
+			commutativeNodesList.push(tree.Find(node));
+			let parentNode = tree.Get(node.parent);
 			commutativeParentsList.push({
 				"index": node.parent,
-				"side": parentNode.leftNode == tree.indexOf(node) ? 'L' : 'R'
+				"side": parentNode.leftNode == tree.Find(node) ? 'L' : 'R'
 			});
 			continue;
 		}
@@ -475,22 +472,22 @@ function findCommutativeNodes(tree, opNodeIndex, operator)
 		// If commutative node of different type (* instead of +) found, normalise that subtree, then add to list
 		if (node.content != operator)
 		{
-			normaliseTree(tree, tree.indexOf(node));
-			commutativeNodesList.push(tree.indexOf(node));
-			let parentNode = tree[node.parent];
+			normaliseTree(tree, tree.Find(node));
+			commutativeNodesList.push(tree.Find(node));
+			let parentNode = tree.Get(node.parent);
 			commutativeParentsList.push({
 				"index": node.parent,
-				"side": parentNode.leftNode == tree.indexOf(node) ? 'L' : 'R'
+				"side": parentNode.leftNode == tree.Find(node) ? 'L' : 'R'
 			});
 			continue;
 		}
 		// If commutative node of same type found, check children
 		let leftNodeIndex = node.leftNode;
-		let leftNode = tree[leftNodeIndex];
+		let leftNode = tree.Get(leftNodeIndex);
 		nodesToCheck.push(leftNode);
 
 		let rightNodeIndex = node.rightNode;
-		let rightNode = tree[rightNodeIndex];
+		let rightNode = tree.Get(rightNodeIndex);
 		nodesToCheck.push(rightNode);
 	}
 	return {"nodes": commutativeNodesList,
@@ -511,7 +508,7 @@ function evaluateIfBTreesEqual(b1, b2)
 	let b2CurrentNode = 0;
 	while (b1CurrentNode != -1)
 	{
-		if (b1[b1CurrentNode].content != b2[b2CurrentNode].content)
+		if (b1.Get(b1CurrentNode).content != b2.Get(b2CurrentNode).content)
 			return false;
 		b1CurrentNode = findNextInDFS(b1, 0, b1CurrentNode);
 		b2CurrentNode = findNextInDFS(b2, 0, b2CurrentNode);
@@ -540,7 +537,7 @@ function evaluateCorrectness(exp1, exp2)
 	let exp2CurrentNode = 0;
 	for (let i = 0; i < Math.min(exp1.length, exp2.length); i++)
 	{
-		if (exp1[exp1CurrentNode].content == exp2[exp2CurrentNode].content)
+		if (exp1.Get(exp1CurrentNode).content == exp2.Get(exp2CurrentNode).content)
 			identicalNodesCount++;
 
 		exp1CurrentNode = findNextInDFS(exp1, 0, exp1CurrentNode);
@@ -550,29 +547,29 @@ function evaluateCorrectness(exp1, exp2)
 	return (1 - Math.exp(-1 * (identicalNodesCount / (exp2.length + difference)))) * 100;
 }
 
-// Compares 2 (sub)graphs, to determine if the right graph is "greater" than the left.
-// If so, the root nodes of both graphs need swapping in their supergraph.
+// Compares 2 subgraphs of a tree, to determine if the right graph is "greater" than the left.
+// If so, the two subgraphs need to be swapped around.
 // Essentially performs a DFS simultaneously on both graphs, until the contents of the nodes being visited is different.
 // In this case, compare the two. If right graph > left, return true. Else, return false.
 // If no differences found, return false.
-// INPUTS: int left index, int right index, (super)graph
-function evaluateIfSwapNeeded(graph, leftRoot, rightRoot, left=leftRoot, right=rightRoot)
+// INPUTS: int left index, int right index, tree
+function evaluateIfSwapNeeded(tree, leftRoot, rightRoot, left=leftRoot, right=rightRoot)
 {
 	// Compare left and right
-	if (graph[right].content > graph[left].content)
+	if (tree.Get(right).content > tree.Get(left).content)
 		return true;
-	else if (graph[left].content > graph[right].content)
+	else if (tree.Get(left).content > tree.Get(right).content)
 		return false;
 	// If same, find next node in DFS of left and right
-	let nextLeftIndex = findNextInDFS(graph, leftRoot, left);
-	let nextRightIndex = findNextInDFS(graph, rightRoot, right);
+	let nextLeftIndex = findNextInDFS(tree, leftRoot, left);
+	let nextRightIndex = findNextInDFS(tree, rightRoot, right);
 
 	// If either = -1, then that graph had been fully traversed. Both graphs are the same, return false
 	if (nextLeftIndex == -1 || nextRightIndex == -1)
 		return false;
 
 	// Else, recurse
-	return evaluateIfSwapNeeded(graph, leftRoot, rightRoot, nextLeftIndex, nextRightIndex);
+	return evaluateIfSwapNeeded(tree, leftRoot, rightRoot, nextLeftIndex, nextRightIndex);
 }
 
 // Finds the index of the next node that should be observed in a DFS of binary tree
@@ -581,7 +578,7 @@ function evaluateIfSwapNeeded(graph, leftRoot, rightRoot, left=leftRoot, right=r
 function findNextInDFS(bTree, root, currentNodeIndex)
 {
 	// Find current node
-	let currentNode = bTree[currentNodeIndex];
+	let currentNode = bTree.Get(currentNodeIndex);
 	// If has left child, return its index
 	if (currentNode.leftNode != -1)
 		return currentNode.leftNode;
@@ -591,7 +588,7 @@ function findNextInDFS(bTree, root, currentNodeIndex)
 		// Set current node to parent
 		let previousNodeIndex = currentNodeIndex;
 		currentNodeIndex = currentNode.parent;
-		currentNode = bTree[currentNodeIndex];
+		currentNode = bTree.Get(currentNodeIndex);
 
 		// If parent has right node, return it
 		if (currentNode.rightNode != -1 && currentNode.rightNode != previousNodeIndex)
@@ -606,7 +603,7 @@ function findNextInDFS(bTree, root, currentNodeIndex)
 // RETURNS: str that can be interpreted by MathJax
 function treeToMathJax(tree, currentNodeIndex=0)
 {
-	let currentNode = tree[currentNodeIndex];
+	let currentNode = tree.Get(currentNodeIndex);
 	let output = "";
 	switch (currentNode.type)
 	{
@@ -614,9 +611,9 @@ function treeToMathJax(tree, currentNodeIndex=0)
 		{
 			// If children of operator are another operator, use ()s
 			let rightNodeIndex = currentNode.rightNode;
-			let rightNode = tree[rightNodeIndex];
+			let rightNode = tree.Get(rightNodeIndex);
 			let leftNodeIndex = currentNode.leftNode;
-			let leftNode = tree[leftNodeIndex];
+			let leftNode = tree.Get(leftNodeIndex);
 
 			if (rightNode.type == NodeType.OPERATOR)
 			{
@@ -678,7 +675,7 @@ function treeToMathJax(tree, currentNodeIndex=0)
 					// If addition is actually representing a subtraction, ignore + sign (e.g: 1-2 -> 1+(-1*2))
 					if (leftNode.type == NodeType.OPERATOR && leftNode.content == Operator.MULTIPLICATION)
 					{
-						if (tree[leftNode.rightNode].type == NodeType.NUMBER && tree[leftNode.rightNode].content == '-1')
+						if (tree.Get(leftNode.rightNode).type == NodeType.NUMBER && tree.Get(leftNode.rightNode).content == '-1')
 							break;
 					}
 					else
@@ -715,7 +712,7 @@ function treeToMathJax(tree, currentNodeIndex=0)
 		case NodeType.FUNCTION:
 			output += `\\${currentNode.content}`;
 			let leftNodeIndex = currentNode.leftNode;
-			let leftNode = tree[leftNodeIndex];
+			let leftNode = tree.Get(leftNodeIndex);
 			if (leftNode.type == NodeType.OPERATOR)
 			{
 				// If division, use {}s instead of ()s

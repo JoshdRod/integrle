@@ -65,7 +65,7 @@ class Node {
 				this.#_type = NodeType.CLOSE_BRACKET;
 				break;
 			default: // Invalid type!
-				throw new Errror(`Invalid type! Got ${type}, which is not in the type list.`);
+				throw new Error(`Invalid type! Got ${type}, which is not in the type list.`);
 		}
 	}
 
@@ -103,7 +103,7 @@ class Node {
 						this.#_content = Operator.EXPONENTIATION;
 						break;
 					default:
-						throw `Attempted to create Operator node with non-operator content. Given: ${content}`;
+						throw new Error(`Attempted to create Operator node with non-operator content. Given: ${content}`);
 				}
 				break;
 			case NodeType.FUNCTION:
@@ -150,5 +150,156 @@ class Node {
 			default:
 				return false;
 		}
+	}
+}
+
+class Tree {
+	constructor (body=[], root=0) {
+		this.body = body;
+		this.root = root;
+	}
+
+	//
+	/* -- DATA  -- */
+	//
+
+	// body = The list of Node objects that form the tree
+	#_body = [];
+	get body() {
+		return this.#_body;
+	}
+	set body(content) {
+		// If content is an array of Node objects, then allow the set
+		// Array test
+		if (!Array.isArray(content)) {
+			throw new Error(`Tried to set body of tree to non-array: ${content}`);
+		}
+
+		// Node objects test
+		for (const element of content) {
+			if (!(element instanceof Node)) {
+				throw new Error(`Tried to set body of tree to array containing non-node elements: ${content}`);
+			}
+		}
+
+		this.#_body = content;
+		return;
+	}
+
+	// root = A pointer to the root node of the tree
+	#_root;
+	get root() {
+		return this.#_root;
+	}
+	set root(value) {
+		if (!Number.isInteger(value)) {
+			throw new Error(`Tried to set root node pointer to non-integer value: ${value}`);
+		}
+		if (value > this.body.length - 1) {
+			throw new Error(`Tried to set root node pointer to value out of range: ${value}`);
+		}
+
+		this.#_root = value;
+		return;
+	}
+
+	// length = length of body
+	#_length;
+	get length() {
+		return this.body.length;
+	}
+
+	//
+	/* -- FUNCTIONALITY -- */
+	//
+
+	// Get a node from the tree
+	// INPUTS: int index
+	// RETURNS: node at that index (if exists)
+	Get(index) {
+		if (typeof(index) != "number")
+			throw new Error(`Index for Get is NaN: ${index}`);
+		if (index >= this.body.length)
+			throw new Error(`Index of out range: tree has length ${this.body.length}, index addressed: ${index}`);
+
+		return this.body[index];
+	}
+
+	// Finds a node in the tree, and returns its index
+	// INPUT: Node
+	// RETURNS: int index of node in tree
+	Find(node) {
+		if (!(node instanceof Node))
+			throw new Error(`Attempted to find index of non-node: ${node}`);
+
+		return this.body.indexOf(node);
+	}
+
+	// Add a node to the graph, below its parent. The default behaviour is to place the node to the left of the parent, if possible.
+	// INPUTS: Node to add, parent node to add under
+	// RETURNS: none.
+	Add(node, parent) {
+		if (this.Find(parent) == -1) {
+			throw new Error(`Attempted to add child to node not in tree:\n\n Parent:\n\n ${parent}`);
+		}
+		if (parent.leftNode == -1) {
+			parent.leftNode = this.body.length;
+		}
+		else if (parent.rightNode == -1) {
+			parent.rightNode = this.body.length;
+		}
+		else {
+			throw new Error(`Attempted to add node to binary tree as child to node with two children: \n\n${node} \n\nto \n\n${parent}`);
+		}
+		node.parent = this.body.indexOf(parent);
+		this.#_body.push(node);
+		return;
+	}
+
+	// Remove a specified node from the graph.
+	// INPUTS: Node to remove
+	// RETURNS: none.
+	Remove(node) {
+		let nodeIndex = this.Find(node);
+		if (nodeIndex == -1) {
+			throw new Error(`Attempted to remove node that is not in tree:\n\n\ Node: \n\n${node} \n\n Tree: \n\n${this.body}`);
+		}
+
+		// Do not allow removal of non-leaf nodes (else tree splits into three!)
+		if (node.leftNode != -1 || node.rightNode != -1) {
+			throw new Error(`Tried to remove non-leaf node from tree! Node ${node} \n from tree ${this.body}`);
+		}
+		// Find parent node
+		// Remove node from parent node's children
+		let parentNode = this.body[node.parent];
+		if (parentNode.leftNode == nodeIndex) {
+			parentNode.leftNode = -1;
+		}
+		else if (parentNode.rightNode == nodeIndex) {
+			parentNode.rightNode = -1;
+		}
+		else {
+			throw new Error(`Attempted to remove node that has no reference in its parent:\nNode (index ${nodeIndex}): ${node}\nParent: ${parentNode}`);
+		}
+
+		// Subtract 1 from all parent/child pointers > node's position in body
+		for (const treeNode of this.body) {
+			if (treeNode.leftNode > nodeIndex) {
+				treeNode.leftNode -= 1;
+			}
+			if (treeNode.rightNode > nodeIndex) {
+				treeNode.rightNode -= 1;
+			}
+			if (treeNode.parent > nodeIndex) {
+				treeNode.parent -= 1;
+			}
+		}
+		// Subract 1 from root if affected
+		if (this.root > nodeIndex) {
+			this.root -= 1;
+		}
+
+		// Delete node from body
+		this.body.splice(nodeIndex, 1);
 	}
 }
