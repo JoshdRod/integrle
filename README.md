@@ -29,5 +29,9 @@ Just fork the repository, make a change, and put up a pull request!
 
 For a list of issues, check the issues tab.
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=JoshdRod/integrle&type=timeline&legend=top-left)](https://www.star-history.com/#JoshdRod/integrle&type=timeline&legend=top-left)
+
 ## Credits
 Thx [Jonty](https://github.com/Jet-b) for the readme.
