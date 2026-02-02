@@ -486,7 +486,8 @@ function findCommutativeNodes(tree, opNodeIndex, operator)
 		}
 		// If commutative node of same type found, check children
 		let leftNodeIndex = node.leftNode;
-		let leftNode = tree.Get(leftNodeIndex); nodesToCheck.push(leftNode);
+		let leftNode = tree.Get(leftNodeIndex);
+		nodesToCheck.push(leftNode);
 
 		let rightNodeIndex = node.rightNode;
 		let rightNode = tree.Get(rightNodeIndex);
