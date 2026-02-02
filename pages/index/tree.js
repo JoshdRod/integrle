@@ -178,7 +178,7 @@ class Tree {
 		// Node objects test
 		for (const element of content) {
 			if (!(element instanceof Node)) {
-				throw new Error(`Tried to set body of tree to array contaning non-node elements: ${content}`);
+				throw new Error(`Tried to set body of tree to array containing non-node elements: ${content}`);
 			}
 		}
 
@@ -230,13 +230,13 @@ class Tree {
 	// RETURNS: int index of node in tree
 	Find(node) {
 		if (!(node instanceof Node))
-			throw new Error(`Attempted to find inddex of non-node: ${node}`);
+			throw new Error(`Attempted to find index of non-node: ${node}`);
 
 		return this.body.indexOf(node);
 	}
 
 	// Add a node to the graph, below its parent. The default behaviour is to place the node to the left of the parent, if possible.
-	// INUPTS: Node to add, parent node to add under
+	// INPUTS: Node to add, parent node to add under
 	// RETURNS: none.
 	Add(node, parent) {
 		if (this.Find(parent) == -1) {
