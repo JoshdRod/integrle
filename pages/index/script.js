@@ -1,6 +1,6 @@
 // TODO: Eventually, put this in a separate file
 let RAW_SOLUTION = "1/2 x^2 sin(2x) + 1/2 x cos(2x) - 1/4 sin(2x) + c";
-let SOLUTION = normaliseTree(strToTree(RAW_SOLUTION));
+let SOLUTION = normaliseTree(strToTree(RAW_SOLUTION)); // TODO: Add normaliseTree back
 let answerText = document.getElementById("answerText"); // Answer that appears on win modal
 answerText.innerText = `\\(${RAW_SOLUTION}\\)`;
 
@@ -382,7 +382,128 @@ function postfixToTree(components, index=0, parentIndex=-1, depth=0)
 // RETURNS: list normalised tree
 function normaliseTree(tree, rootNodeIndex=0)
 {
-	let currentNodeIndex = rootNodeIndex;
+	// Convert all quotients to form a/b * c
+	let currentNodeIndex = 0;
+	while (currentNodeIndex != -1)
+	{
+		let currentNode = tree[currentNodeIndex];
+		if (!checkDividendIsProduct(tree, currentNode))
+		{
+			currentNodeIndex = findNextInDFS(tree, 0, currentNodeIndex);
+			continue;
+		}
+
+		let currentRightNode = tree[currentNode.rightNode];
+		// If / is at front of list, we need to swap the / and * around.
+		if (currentNodeIndex == 0)
+		{
+			currentRightNode.parent = -1;
+			let temp = currentRightNode;
+			tree[currentNode.rightNode] = currentNode;
+			tree[0] = temp;
+
+			// Fix children
+			let b = tree[currentNode.leftNode];
+			b.parent = tree.indexOf(currentNode);
+
+			let c = tree[currentRightNode.leftNode];
+			c.parent = 0;
+		}
+
+		// If not, make * child of /s parent
+		else
+		{
+			let currentNodeParent = tree[currentNode.parent];
+			currentRightNode.parent = currentNode.parent;
+			if (currentNodeParent.leftNode == currentNodeIndex)
+				currentNodeParent.leftNode = tree.indexOf(currentRightNode);
+			else
+				currentNodeParent.rightNode = tree.indexOf(currentRightNode);
+		}
+
+		// Check quotient is in form ac/b, and needs to be transformed
+		// (Current node is /, and right child is *
+				// Make a (right child of *) the right child of /
+		currentNode.rightNode = currentRightNode.rightNode;
+		let a = tree[currentNode.rightNode];
+		a.parent = tree.indexOf(currentNode);
+
+		// Make / the right child of *
+		currentRightNode.rightNode = tree.indexOf(currentNode);
+		currentNode.parent = tree.indexOf(currentRightNode);
+
+		currentNodeIndex = findNextInDFS(tree, 0, tree.indexOf(currentNode));
+	}
+
+// Convert all quotients to form 1/b * a
+	currentNodeIndex = 0;
+	while (currentNodeIndex != -1)
+	{
+		let currentNode = tree[currentNodeIndex];
+		if (!checkDividendIsNot1(tree, currentNode))
+		{
+			currentNodeIndex = findNextInDFS(tree, 0, currentNodeIndex);
+			continue;
+		}
+
+		let a = tree[currentNode.rightNode];
+
+		// Add * node
+		let multiplyNode = {
+			content: '*',
+			type: "operator",
+			leftNode: tree.indexOf(a),
+			rightNode: currentNodeIndex,
+			parent: currentNode.parent,
+			depth: -1
+		};
+
+		tree.push(multiplyNode);
+
+		// If / is at front of list, we need to swap the / and * around.
+		if (currentNodeIndex == 0)
+		{
+			let temp = multiplyNode;
+			tree[tree.indexOf(multiplyNode)] = currentNode;
+			tree[0] = temp;
+
+			multiplyNode.parent = -1;
+			multiplyNode.rightNode = tree.indexOf(currentNode);
+			// Fix children of /
+			let b = tree[currentNode.leftNode];
+			b.parent = tree.indexOf(currentNode);
+		}
+
+		// If not, make * the right node of its parent
+		else
+		{
+			let multiplyNodeParent = tree[currentNode.parent];
+			multiplyNodeParent.rightNode = tree.indexOf(multiplyNode);
+		}
+
+		currentNode.parent = tree.indexOf(multiplyNode);
+		a.parent = tree.indexOf(multiplyNode);
+
+		// Add 1 node
+		let oneNode = {
+			content: '1',
+			type: "number",
+			leftNode: -1,
+			rightNode: -1,
+			parent: tree.indexOf(currentNode),
+			depth: -1
+		};
+
+		tree.push(oneNode);
+		currentNode.rightNode = tree.indexOf(oneNode);
+
+		// Change current node index to index of * (to traverse over a)
+		currentNodeIndex = tree.indexOf(multiplyNode);
+
+		currentNodeIndex = findNextInDFS(tree, 0, tree.indexOf(currentNode));
+	}
+
+	currentNode = rootNodeIndex;
 	while (currentNodeIndex != -1)
 	{
 		let currentNode = tree.Get(currentNodeIndex);
@@ -492,6 +613,40 @@ function findCommutativeNodes(tree, opNodeIndex, operator)
 	}
 	return {"nodes": commutativeNodesList,
 		"parents": commutativeParentsList};
+}
+
+// Checks whether current node is a /, and if its dividend is a product.
+// Essentially, check for divisions in form of ab/c (as these need to be normalised to a/b * c)
+// INPUTS: tree, node in tree
+// RETURNS: bool true if dividend is product, false if not
+function checkDividendIsProduct(tree, node)
+{
+	// Check if node is /, and right child is *
+	if (node.type != "operator" || node.content != '/')
+		return false;
+
+	let currentRightNode = tree[node.rightNode];
+	if (currentRightNode.type != "operator" || currentRightNode.content != '*')
+		return false;
+
+	return true;
+}
+
+// Checks whether current node is a /, and is dividend is something other than 1
+// Essentially, checks for divisions in the form of a/b (as these need to be normalised to 1/b * a)
+// INPUTS: tree, node in tree
+// RETURNS: bool true is dividend is not 1, false if it is
+function checkDividendIsNot1(tree, node)
+{
+	// Check if node is /, and right child is not 1
+	if (node.type != "operator" || node.content != '/')
+		return false;
+
+	let currentRightNode = tree[node.rightNode];
+	if (currentRightNode.type == "number" && currentRightNode.content == '1')
+		return false;
+
+	return true;
 }
 
 // Compares 2 binary trees, and returns true if their contents are equal.
