@@ -255,6 +255,15 @@ class Tree {
 		this.#_body.push(node);
 		return;
 	}
+	
+	// Add a node to the tree as the root node. Note: The previous root node will need its parent node to be assigned separately.
+	// INPUTS: Node to add as root
+	// RETURNS: none.
+	AddAsRoot(node) {
+		this.#_body.push(node);
+		this.root = this.Find(node);
+		return;
+	}
 
 	// Remove a specified node from the graph.
 	// INPUTS: Node to remove

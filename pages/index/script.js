@@ -1,6 +1,6 @@
 // TODO: Eventually, put this in a separate file
 let RAW_SOLUTION = "1/2 x^2 sin(2x) + 1/2 x cos(2x) - 1/4 sin(2x) + c";
-let SOLUTION = normaliseTree(strToTree(RAW_SOLUTION));
+let SOLUTION = normaliseTree(strToTree(RAW_SOLUTION)); // TODO: Add normaliseTree back
 let answerText = document.getElementById("answerText"); // Answer that appears on win modal
 answerText.innerText = `\\(${RAW_SOLUTION}\\)`;
 
@@ -382,7 +382,101 @@ function postfixToTree(components, index=0, parentIndex=-1, depth=0)
 // RETURNS: list normalised tree
 function normaliseTree(tree, rootNodeIndex=0)
 {
-	let currentNodeIndex = rootNodeIndex;
+	// Convert all quotients to form a/b * c
+	let currentNodeIndex = 0;
+	while (currentNodeIndex != -1)
+	{
+		// Check quotient is in form ac/b, and needs to be transformed
+		// (Current node is /, and right child is *)
+		let currentNode = tree.Get(currentNodeIndex);
+		if (!checkDividendIsProduct(tree, currentNode))
+		{
+			currentNodeIndex = findNextInDFS(tree, 0, currentNodeIndex);
+			continue;
+		}
+
+		let divisionNode = currentNode;
+		// Make a (right child of *) the right child of /
+		let multiplicationNode = tree.Get(divisionNode.rightNode);
+
+		// If / is root node, we need to make * root node
+		if (tree.Find(currentNode) == tree.root)
+		{
+			tree.root = tree.Find(multiplyNode);
+		}
+
+		// If not, make * the child of /'s parent 
+		else
+		{
+			let divisionNodeParent = tree.Get(divisionNode.parent);
+			if (divisionNodeParent.leftNode == tree.Find(divisionNode))
+			{
+				divisionNodeParent.leftNode = tree.Find(multiplicationNode);
+			}
+			else if (divisionNodeParent.rightNode == tree.Find(divisionNode))
+			{
+				divisionNodeParent.rightNode = tree.Find(multiplicationNode);
+			}
+		}
+
+		divisionNode.rightNode = multiplicationNode.rightNode;
+		let a = tree.Get(divisionNode.rightNode);
+		a.parent = tree.Find(divisionNode);
+
+		// Make / the right child of *
+		multiplicationNode.rightNode = tree.Find(divisionNode);
+		divisionNode.parent = tree.Find(multiplicationNode);
+
+		// TODO: If / is at front of list, we need to swap the / and * around.
+		currentNodeIndex = findNextInDFS(tree, 0, tree.Find(divisionNode));
+	}
+
+// Convert all quotients to form 1/b * a
+	currentNodeIndex = 0;
+	while (currentNodeIndex != -1)
+	{
+		let currentNode = tree.Get(currentNodeIndex);
+		if (!checkDividendIsNot1(tree, currentNode))
+		{
+			currentNodeIndex = findNextInDFS(tree, 0, currentNodeIndex);
+			continue;
+		}
+
+		let a = tree.Get(currentNode.rightNode);
+
+		// Add * node
+		let multiplyNode = new Node("operator", Operator.MULTIPLICATION, leftNode=tree.Find(a), rightNode=currentNodeIndex);
+
+		// If / is root node, we need to make * root node
+		if (tree.Find(currentNode) == tree.root)
+		{
+			tree.AddAsRoot(multiplyNode);
+		}
+
+		// If not, make * the right node of its parent
+		else
+		{
+			let multiplyNodeParent = tree.Get(currentNode.parent);
+			multiplyNodeParent.rightNode = -1;
+			tree.Add(multiplyNode, multiplyNodeParent);
+		}
+
+		currentNode.parent = tree.Find(multiplyNode);
+		a.parent = tree.Find(multiplyNode);
+
+		// Add 1 node
+		let oneNode = newNode("number", '1');
+		tree.Add(oneNode, currentNode);
+
+		currentNode.rightNode = tree.Find(oneNode);
+
+		// Change current node index to index of * (to traverse over a)
+		currentNodeIndex = tree.Find(multiplyNode);
+
+		currentNodeIndex = findNextInDFS(tree, 0, tree.Find(currentNode));
+	}
+
+	currentNodeIndex = tree.root;
 	while (currentNodeIndex != -1)
 	{
 		let currentNode = tree.Get(currentNodeIndex);
@@ -492,6 +586,40 @@ function findCommutativeNodes(tree, opNodeIndex, operator)
 	}
 	return {"nodes": commutativeNodesList,
 		"parents": commutativeParentsList};
+}
+
+// Checks whether current node is a /, and if its dividend is a product.
+// Essentially, check for divisions in form of ab/c (as these need to be normalised to a/b * c)
+// INPUTS: tree, node in tree
+// RETURNS: bool true if dividend is product, false if not
+function checkDividendIsProduct(tree, node)
+{
+	// Check if node is /, and right child is *
+	if (node.type != NodeType.OPERATOR || node.content != '/')
+		return false;
+
+	let currentRightNode = tree.Get(node.rightNode);
+	if (currentRightNode.type != NodeType.OPERATOR || currentRightNode.content != '*')
+		return false;
+
+	return true;
+}
+
+// Checks whether current node is a /, and is dividend is something other than 1
+// Essentially, checks for divisions in the form of a/b (as these need to be normalised to 1/b * a)
+// INPUTS: tree, node in tree
+// RETURNS: bool true is dividend is not 1, false if it is
+function checkDividendIsNot1(tree, node)
+{
+	// Check if node is /, and right child is not 1
+	if (node.type != NodeType.OPERATOR || node.content != '/')
+		return false;
+
+	let currentRightNode = tree.Get(node.rightNode);
+	if (currentRightNode.type == NodeType.NUMBER && currentRightNode.content == '1')
+		return false;
+
+	return true;
 }
 
 // Compares 2 binary trees, and returns true if their contents are equal.
