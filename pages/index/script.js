@@ -1,5 +1,5 @@
 // TODO: Eventually, put this in a separate file
-let RAW_SOLUTION = "1/2 x^2 sin(2x) + 1/2 x cos(2x) - 1/4 sin(2x) + c";
+let RAW_SOLUTION = "4x^3 - 3x^2 + 2x + c";
 let SOLUTION = normaliseTree(strToTree(RAW_SOLUTION));
 let answerText = document.getElementById("answerText"); // Answer that appears on win modal
 answerText.innerText = `\\(${RAW_SOLUTION}\\)`;
